@@ -1,0 +1,1 @@
+INSERT INTO SEQUENCE(id, date, seq) SELECT 0, FORMATDATETIME(now(), 'yyyy-MM-dd') date, 0 FROM DUAL;
