@@ -2,15 +2,14 @@ package com.common.seq.id.impl;
 
 import java.util.Date;
 
-import org.springframework.stereotype.Component;
-
 import com.common.seq.id.ID;
 
-@Component
 public class GUID implements ID{
 
     private String id = "";
+
     private Date lastModifyDate ;
+    
     private int length = 30;
 
 

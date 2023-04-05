@@ -13,11 +13,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.common.seq.data.dao.ShortenUrlDAO;
+import com.common.seq.data.dto.RespShortenUrlDto;
 import com.common.seq.data.dto.naver.RespShortenUrl;
+import com.common.seq.data.entity.ShortenUrl;
 import com.common.seq.service.ShortenUrlService;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@RequiredArgsConstructor
 @Service
+@Slf4j
 public class ShortenUrlServiceImpl implements ShortenUrlService {
+
+    private final ShortenUrlDAO shortenUrlDAO;
     
     @Value("${naver.api.client.id}")
     private String CLIENT_ID;
@@ -25,7 +35,7 @@ public class ShortenUrlServiceImpl implements ShortenUrlService {
     @Value("${naver.api.client.secret}")
     private String CLIENT_SECRET;
 
-    public ResponseEntity<RespShortenUrl> requestShortenUrl(String originUrl)  {
+    private ResponseEntity<RespShortenUrl> requestShortenUrl(String originUrl)  {
 
         URI uri = UriComponentsBuilder
         .fromUriString("https://openapi.naver.com")
@@ -49,6 +59,27 @@ public class ShortenUrlServiceImpl implements ShortenUrlService {
         ResponseEntity<RespShortenUrl> responseEntity = restTemplete.exchange(uri, HttpMethod.GET, entity, RespShortenUrl.class);
   
         return responseEntity;
+    }
+
+    public RespShortenUrlDto genShortenUrl(String originUrl) {
+
+        ShortenUrl shortenUrl = shortenUrlDAO.findByOrgUrl(originUrl);
+        log.info("originUrl : {}" , originUrl);
+        
+        if (shortenUrl == null)  {
+            ResponseEntity<RespShortenUrl> responseEntity = requestShortenUrl(originUrl);
+            shortenUrl = shortenUrlDAO.save(
+                ShortenUrl.builder()
+                    .orgUrl(originUrl)
+                    .url(responseEntity.getBody().getResult().getUrl())
+                    .hash(responseEntity.getBody().getResult().getHash())
+                    .build()
+            );
+        } 
+        return RespShortenUrlDto.builder()
+                    .shortenUrl(shortenUrl.getUrl())
+                    .orgUrl(shortenUrl.getOrgUrl())
+                    .build();
     }
 
 }

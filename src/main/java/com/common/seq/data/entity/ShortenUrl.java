@@ -1,6 +1,5 @@
 package com.common.seq.data.entity;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,18 +18,19 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "sequence")
-@Schema(description = "Sequence Response")
-public class Sequence extends BaseEntity{
-	
-	@Id //PK
-	@GeneratedValue(strategy = GenerationType.IDENTITY) //해당 데이터베이스 번호증가 전략을 따라가겠다. 
-	private Long id;
+@Table(name =  "shortenurl")
+public class ShortenUrl extends BaseEntity {
+ 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	@Column
-	private Long seq;
+    @Column(unique = true, nullable = false)
+    private String hash;
 
-	@Column(unique= true, nullable = false)
-	private String date;
-	
+    @Column(unique = true, nullable = false)
+    private String url;
+
+    @Column(unique = true, nullable = false)
+    private String orgUrl;
 }

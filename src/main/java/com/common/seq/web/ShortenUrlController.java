@@ -1,11 +1,12 @@
 package com.common.seq.web;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.common.seq.data.dto.naver.RespShortenUrl;
+import com.common.seq.data.dto.RespShortenUrlDto;
 import com.common.seq.service.ShortenUrlService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,14 +28,12 @@ public class ShortenUrlController {
             @ApiResponse(
                 responseCode = "200"
                 , description = "OK"
-                , content = @Content(schema = @Schema(implementation = RespShortenUrl.class))
+                , content = @Content(schema = @Schema(implementation = RespShortenUrlDto.class))
                 )
     })
     @GetMapping(path = "/", produces = "application/json")
-    public ResponseEntity<RespShortenUrl> getShortenUrl(String originUrl) {
+    public ResponseEntity<RespShortenUrlDto> getShortenUrl(String originUrl) {
         
-        ResponseEntity<RespShortenUrl> respShortenUrl = shortenUrlService.requestShortenUrl(originUrl);
-
-        return respShortenUrl;
+        return new ResponseEntity<RespShortenUrlDto>(shortenUrlService.genShortenUrl(originUrl), HttpStatus.OK);
 	}
 }

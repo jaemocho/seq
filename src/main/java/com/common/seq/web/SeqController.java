@@ -1,6 +1,5 @@
 package com.common.seq.web;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,11 +31,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/seq")
 public class SeqController {
 	
-    @Qualifier("GUIDHandler")
     private final IDHandler ih;
 
     private final SequenceService sequenceService;
-    @Qualifier("SequenceServiceImpl")
 
     @Operation(summary = "GUID 발급 요청", description = "GUID가 신규로 생성 또는 업데이트 됩니다.", tags = { "Seq Controller" })
     @ApiResponses({

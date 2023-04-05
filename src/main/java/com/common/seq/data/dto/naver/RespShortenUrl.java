@@ -15,7 +15,7 @@ public class RespShortenUrl {
     private Result result;
     
     @Data
-    public class Result {
+    public static class Result {
         private String hash;
         private String url;
         private String orgUrl;
