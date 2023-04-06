@@ -19,7 +19,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "sequence")
+@Table(name = "tb_sequence")
 @Schema(description = "Sequence Response")
 public class Sequence extends BaseEntity{
 	

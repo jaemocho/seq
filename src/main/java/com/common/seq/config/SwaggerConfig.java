@@ -20,7 +20,7 @@ public class SwaggerConfig {
  
     @Bean
     public GroupedOpenApi chatOpenApi() {
-        String[] paths = {"/api/v1/seq/**", "/api/v1/shorten-url/**"};
+        String[] paths = {"/api/v1/seq/**", "/api/v1/shorten-url/**", "/api/v1/auth/**"};
  
         return GroupedOpenApi.builder()
                 .group("채번서비스 API v1")

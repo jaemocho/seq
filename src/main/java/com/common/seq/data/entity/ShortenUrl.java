@@ -18,7 +18,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name =  "shortenurl")
+@Table(name =  "tb_shortenurl")
 public class ShortenUrl extends BaseEntity {
  
     @Id

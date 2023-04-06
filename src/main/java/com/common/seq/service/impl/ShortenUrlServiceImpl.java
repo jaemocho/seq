@@ -56,7 +56,8 @@ public class ShortenUrlServiceImpl implements ShortenUrlService {
 
         RestTemplate restTemplete = new RestTemplate();
 
-        ResponseEntity<RespShortenUrl> responseEntity = restTemplete.exchange(uri, HttpMethod.GET, entity, RespShortenUrl.class);
+        ResponseEntity<RespShortenUrl> responseEntity 
+            = restTemplete.exchange(uri, HttpMethod.GET, entity, RespShortenUrl.class);
   
         return responseEntity;
     }

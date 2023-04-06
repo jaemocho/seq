@@ -10,7 +10,7 @@ import com.common.seq.data.dao.SequenceDAO;
 import com.common.seq.data.entity.Sequence;
 import com.common.seq.service.SequenceService;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 

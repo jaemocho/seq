@@ -2,6 +2,7 @@ package com.common.seq.web;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +14,7 @@ import com.common.seq.common.exception.SequenceException;
 import com.common.seq.data.dto.ReqGUID;
 import com.common.seq.data.dto.RespGUID;
 import com.common.seq.data.entity.Sequence;
+import com.common.seq.data.entity.User;
 import com.common.seq.id.IDHandler;
 import com.common.seq.id.impl.GUID;
 import com.common.seq.service.SequenceService;
@@ -82,6 +84,10 @@ public class SeqController {
     })
     @PostMapping(path = "/sequence", produces = "application/json")
     public ResponseEntity<?> increseSEQ(){
+        User activeUser = (User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        log.info("User increaseSEQ [{}] ", activeUser.getUsername());
+
         return new ResponseEntity<>(sequenceService.update(), HttpStatus.OK); 
 
 	}

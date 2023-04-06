@@ -12,7 +12,7 @@ import jakarta.transaction.Transactional;
 public interface SequenceRepository extends JpaRepository<Sequence, Long> {
     
     @Transactional
-    @Query(value = "SELECT * FROM sequence WHERE date = :date for update", nativeQuery = true)
+    @Query(value = "SELECT * FROM tb_sequence WHERE date = :date for update", nativeQuery = true)
     Sequence findByDateForUpdate(@Param("date") String date);
 
     @Transactional
