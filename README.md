@@ -44,6 +44,12 @@
   - SeqApplication.java     … Entry Point.
   ```
 
+> wiki
+
+ - [spring security session](https://github.com/jaemocho/seq/wiki/Spring-Security-%EC%A0%81%EC%9A%A9)
+ - [spring security jwt](https://github.com/jaemocho/seq/wiki/Spring-Security-JWT)
+ - [profile 설정](https://github.com/jaemocho/seq/wiki/profile-%EB%B6%84%EB%A6%AC)
+
 > 어플리케이션 build
 
   0. 사전 준비 
@@ -108,27 +114,6 @@
 
   ![default](image/1만user5초.PNG)
   ![default](image/1만user5초_graph.PNG)    
-
-
-# Golang RestAPI (Echo)
-
-
-
-> local start 
-
-```
-    config/config.toml 작성
-    
-    # github/gitlab 선택 가능 default github
-    # git client 선택 github or gitlab
-    gitClient = "github"
-    
-    # sqlite/postgre 선택 가능 default sqlite
-    # db 선택 sqlite or postgre
-    db ="postgre"
-
-    go run main.go
-```
 
 
 
