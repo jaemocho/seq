@@ -1,12 +1,21 @@
 # Spring boot 
 
-> 사용 open source list
+> Import API list
 
 ```
-    springframework : web service framework, JPA/ORM
-    h2database      : database, Sequnce 생성 및 동시성 보장(file db로 사용)
-    springdoc       : swagger, api 문서 자동화
-    spring security : session 
+    [framework]
+    spring-boot-starter-web
+    
+    [docs]
+    org.springdoc
+
+    [auth]
+    spring-boot-starter-security
+    io.jsonwebtoken
+
+    [db]
+    spring-boot-starter-data-jpa
+    com.h2database
 ```
 
 > 어플리케이션 기동 스크립트
@@ -16,6 +25,24 @@
   windows 환경 start.bat 실행
   linux 환경 start.sh 실행
 ```
+
+> Project Map
+
+```
+- seq
+  + common                  … exception/auth 
+    + auth                  … spring security custom handler, jwt
+    + exception             … custom exception handler 
+  + config                  … config(cors/jpa/profile/security/swagger)
+  + data                    … data
+    + dao                   … database access
+    + dto                   … layer간 data 전송 객체 
+    + entity                … database table
+    + repository            … jpa repository interface 
+  + service                 … spring service layer
+  + web                     … spring controller layer
+  - SeqApplication.java     … Entry Point.
+  ```
 
 > 어플리케이션 build
 
@@ -81,4 +108,31 @@
 
   ![default](image/1만user5초.PNG)
   ![default](image/1만user5초_graph.PNG)    
+
+
+# Golang RestAPI (Echo)
+
+
+
+> local start 
+
+```
+    config/config.toml 작성
+    
+    # github/gitlab 선택 가능 default github
+    # git client 선택 github or gitlab
+    gitClient = "github"
+    
+    # sqlite/postgre 선택 가능 default sqlite
+    # db 선택 sqlite or postgre
+    db ="postgre"
+
+    go run main.go
+```
+
+
+
+   
+
+
 

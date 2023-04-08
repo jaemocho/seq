@@ -2,6 +2,11 @@ package com.common.seq.service.impl;
 
 import java.time.LocalDateTime;
 
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -10,17 +15,24 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.common.seq.common.auth.JWTProvider;
 import com.common.seq.data.dao.UserDAO;
 import com.common.seq.data.dto.ReqUserDto;
 import com.common.seq.data.entity.User;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserDetailsService {
     
     private final UserDAO userDAO;
+
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
+
+    private final JWTProvider jwtProvider;
 
     @Override
     @Transactional
@@ -28,7 +40,10 @@ public class UserServiceImpl implements UserDetailsService {
         
         User user = userDAO.getUserByEmail(username);
         
-        if ( user == null ) throw new UsernameNotFoundException("Not found account.");
+        if ( user == null ) {
+            log.info("{} ", username);
+            throw new UsernameNotFoundException("Not found account.");
+        }
 
         user.setLastLoginTime(LocalDateTime.now());
 
@@ -39,13 +54,31 @@ public class UserServiceImpl implements UserDetailsService {
     public void joinUser(ReqUserDto reqUserDto) {
         
         PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-
-        // log.info("{} {} {}", reqUserDto.getPwd(), reqUserDto.getEmail(), passwordEncoder.encode(reqUserDto.getPwd()));
         
         userDAO.save(User.builder()
                         .pwd(passwordEncoder.encode(reqUserDto.getPwd()))
                         .email(reqUserDto.getEmail())
                         .build());
+    }
+
+    public String createToken(ReqUserDto reqUserDto) {
+        
+        loadUserByUsername(reqUserDto.getEmail());
+
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(reqUserDto.getEmail(), reqUserDto.getPwd());
+
+        // 인증매니저를 빌드한 후 인증 진행
+        // authenticate 수행 시 loadUserByUsername 실행 
+        // authenticationToken 의 user/password 정보로 인증을 진행 문제 없으면 authentication 을 반환 
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+
+        // 인증 완료 후 authentication 등록 
+        // 권한을 관리하려는 목적이 없으면 등록하지 않아도 상관 없음 
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        
+        return jwtProvider.createToken(authentication);
+
     }
     
 }

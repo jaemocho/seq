@@ -2,7 +2,6 @@ package com.common.seq.web;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,5 +25,11 @@ public class UserController {
         userServiceImpl.joinUser(reqUserDto);
 
         return new ResponseEntity<>("SUCCESS", HttpStatus.OK); 
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody ReqUserDto reqUserDto) {
+
+        return new ResponseEntity<>(userServiceImpl.createToken(reqUserDto), HttpStatus.OK); 
     }
 }

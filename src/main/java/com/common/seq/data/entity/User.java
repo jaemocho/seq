@@ -25,7 +25,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name =  "tb_user")
+@Table(name = "tb_user")
 public class User extends BaseEntity implements UserDetails{
 
 
