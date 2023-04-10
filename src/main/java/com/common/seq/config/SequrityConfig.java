@@ -9,6 +9,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.filter.CorsFilter;
 
+import com.common.seq.common.auth.JWTAuthenticationEntryPoint;
 import com.common.seq.common.auth.JWTAuthenticationFilter;
 import com.common.seq.common.auth.JWTProvider;
 
@@ -26,6 +27,8 @@ public class SequrityConfig {
     private final JWTProvider jwtProvider;
 
     private final CorsFilter corsFilter;
+
+    private final JWTAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
 
     @Bean
@@ -51,20 +54,19 @@ public class SequrityConfig {
 
             // api 경로 
             .and()
-            .authorizeHttpRequests()
-            .requestMatchers("/api/v1/auth/**").permitAll()
-            .requestMatchers("/swagger-ui/**").permitAll()
-            .requestMatchers("/v3/api-docs/**").permitAll()
-            .anyRequest().authenticated()
-
-            .and()
+            .authorizeHttpRequests((authz) -> authz
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/v3/api-docs/**").permitAll()
+                .anyRequest().authenticated())
+            
             .addFilter(corsFilter)
             .addFilterBefore(new JWTAuthenticationFilter(jwtProvider)
                         , UsernamePasswordAuthenticationFilter.class)
             
             // 상세한 인증/인가 관련 핸들링이 필요할 때 작성
-            // .exceptionHandling()
-            // .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 인증 실패 시 핸들링 implements AuthenticationEntryPoint 
+            .exceptionHandling()
+            .authenticationEntryPoint(jwtAuthenticationEntryPoint) // 인증 실패 시 핸들링 implements AuthenticationEntryPoint 
             // .accessDeniedHandler(jwtAccessDeniedHandler) // 인가 실패 시 핸들링 implements AccessDeniedHandler 
             ;
 		

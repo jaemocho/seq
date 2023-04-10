@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import com.common.seq.common.Constants.JWTException;
 import com.common.seq.data.entity.User;
 
 import io.jsonwebtoken.Claims;
@@ -73,6 +74,12 @@ public class JWTProvider {
         .parseClaimsJws(token)
         .getBody();
 
+
+        // Collection<? extends GrantedAuthority> authorities =
+        // Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+        //         .map(SimpleGrantedAuthority::new)
+        //         .collect(Collectors.toList());
+
         // 디비를 거치지 않고 토큰에서 값을 꺼내 바로 시큐리티 유저 객체를 만들어 Authentication을 만들어 반환하기에 유저네임, 권한 외 정보는 알 수 없다.
         User user = User.builder()
                         .email(claims.getSubject())
@@ -81,23 +88,27 @@ public class JWTProvider {
         return new UsernamePasswordAuthenticationToken(user, token, null);
     }
 
-    public boolean validateToken(String token) {
+    public String validateToken(String token) {
+        String result = "SUCCESS";
         try {
             Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-            return true;
+            return result;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("잘못된 JWT 서명입니다.");
+             result = JWTException.MALFORMED_JWT.getJwtException();
         } catch (ExpiredJwtException e) {
-            log.info("만료된 JWT 토큰입니다.");
+             result = JWTException.EXPIRED_JWT.getJwtException();
         } catch (UnsupportedJwtException e) {
-            log.info("지원되지 않는 JWT 토큰입니다.");
+             result = JWTException.UNSUPPORTED_JWT.getJwtException();
         } catch (IllegalArgumentException e) {
-            log.info("JWT 토큰이 잘못되었습니다.");
+             result = JWTException.ILLEGALARGUMENT.getJwtException();
         }
-        return false;
+
+        log.info("[JWTProvider vaildateToken] {}", result);
+             
+        return result;
     }
 }

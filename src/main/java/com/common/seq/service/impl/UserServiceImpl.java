@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -42,7 +41,7 @@ public class UserServiceImpl implements UserDetailsService {
         
         if ( user == null ) {
             log.info("{} ", username);
-            throw new UsernameNotFoundException("Not found account.");
+            throw new UsernameNotFoundException("Not found account.[ " + username + " ]");
         }
 
         user.setLastLoginTime(LocalDateTime.now());
@@ -73,10 +72,6 @@ public class UserServiceImpl implements UserDetailsService {
         // authenticationToken 의 user/password 정보로 인증을 진행 문제 없으면 authentication 을 반환 
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
-        // 인증 완료 후 authentication 등록 
-        // 권한을 관리하려는 목적이 없으면 등록하지 않아도 상관 없음 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        
         return jwtProvider.createToken(authentication);
 
     }
