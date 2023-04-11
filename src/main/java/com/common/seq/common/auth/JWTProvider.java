@@ -10,8 +10,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.common.seq.common.Constants.JWTException;
+import com.common.seq.common.Constants.JWTType;
+import com.common.seq.data.dao.RefreshTokenDAO;
+import com.common.seq.data.entity.RefreshToken;
 import com.common.seq.data.entity.User;
 
 import io.jsonwebtoken.Claims;
@@ -32,11 +36,16 @@ public class JWTProvider {
     
     protected static final String AUTHORITIES_KEY = "auth";
 
+    private final RefreshTokenDAO refreshTokenDAO;
+
     @Value("${jwt.secret}")
     private String secret;
     
     @Value("${jwt.access-token-validity-in-seconds}")
     private long accessTokenValidityInseconds;
+
+    @Value("${jwt.refresh-token-validity-in-seconds}")
+    private long refreshTokenValidityInseconds;
 
     protected Key key;
 
@@ -48,7 +57,7 @@ public class JWTProvider {
     
 
     // 토큰 생성
-    public String createToken(Authentication authentication) {
+    public String createToken(Authentication authentication, JWTType type) {
         
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -56,11 +65,19 @@ public class JWTProvider {
 
         Date now = new Date();
 
+        long tokenValidityInseconds = 0L;
+
+        if (JWTType.ACCESS_TOKEN.getJwtType().equals(type.getJwtType())) {
+            tokenValidityInseconds = accessTokenValidityInseconds;
+        } else  {
+            tokenValidityInseconds = refreshTokenValidityInseconds;
+        } 
+
         return Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim(AUTHORITIES_KEY, authorities)
                 .setIssuedAt(now) // 토큰 발행 시간 정보
-                .setExpiration(new Date(now.getTime() + accessTokenValidityInseconds)) // set Expire Time
+                .setExpiration(new Date(now.getTime() + tokenValidityInseconds)) // set Expire Time
                 .signWith(key, SignatureAlgorithm.HS256)  // 사용할 암호화 알고리즘과
                 // signature 에 들어갈 secret값 세팅
                 .compact();
@@ -68,11 +85,11 @@ public class JWTProvider {
 
     public Authentication getAuthentication(String token) {
         Claims claims = Jwts
-        .parserBuilder()
-        .setSigningKey(key)
-        .build()
-        .parseClaimsJws(token)
-        .getBody();
+                        .parserBuilder()
+                        .setSigningKey(key)
+                        .build()
+                        .parseClaimsJws(token)
+                        .getBody();
 
 
         // Collection<? extends GrantedAuthority> authorities =
@@ -110,5 +127,25 @@ public class JWTProvider {
         log.info("[JWTProvider vaildateToken] {}", result);
              
         return result;
+    }
+
+    public Boolean vaildateAccessRefreshTokenMatch(String accessToken, String refreshToken) {
+        RefreshToken refreshTokenEntity = refreshTokenDAO.getRefreshToken(refreshToken);
+        
+        if ( refreshTokenEntity != null ) {
+            if(refreshTokenEntity.getAccessToken().equals(accessToken) 
+            && refreshTokenEntity.getRefreshToken().equals(refreshToken)) {
+                return true;
+        }
+        }
+        return false;
+    }
+
+    @Transactional
+    public void updateRefreshToken(String newAccessToken, String refreshToken) {
+        
+        RefreshToken refreshTokenEntity = refreshTokenDAO.getRefreshToken(refreshToken);
+        
+        refreshTokenEntity.setAccessToken(newAccessToken);
     }
 }

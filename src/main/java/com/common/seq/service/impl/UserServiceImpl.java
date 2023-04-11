@@ -14,9 +14,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.common.seq.common.Constants.JWTType;
 import com.common.seq.common.auth.JWTProvider;
+import com.common.seq.data.dao.RefreshTokenDAO;
 import com.common.seq.data.dao.UserDAO;
 import com.common.seq.data.dto.ReqUserDto;
+import com.common.seq.data.dto.TokenDto;
 import com.common.seq.data.entity.User;
 
 import lombok.RequiredArgsConstructor;
@@ -32,6 +35,8 @@ public class UserServiceImpl implements UserDetailsService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     private final JWTProvider jwtProvider;
+
+    private final RefreshTokenDAO refreshTokenDAO;
 
     @Override
     @Transactional
@@ -60,7 +65,26 @@ public class UserServiceImpl implements UserDetailsService {
                         .build());
     }
 
-    public String createToken(ReqUserDto reqUserDto) {
+
+    // access token 만 사용 
+    // public String createToken(ReqUserDto reqUserDto) {
+        
+    //     loadUserByUsername(reqUserDto.getEmail());
+
+    //     UsernamePasswordAuthenticationToken authenticationToken =
+    //             new UsernamePasswordAuthenticationToken(reqUserDto.getEmail(), reqUserDto.getPwd());
+
+    //     // 인증매니저를 빌드한 후 인증 진행
+    //     // authenticate 수행 시 loadUserByUsername 실행 
+    //     // authenticationToken 의 user/password 정보로 인증을 진행 문제 없으면 authentication 을 반환 
+    //     Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+
+    //     return jwtProvider.createToken(authentication);
+
+    // }
+
+    @Transactional
+    public TokenDto createToken(ReqUserDto reqUserDto) {
         
         loadUserByUsername(reqUserDto.getEmail());
 
@@ -72,7 +96,15 @@ public class UserServiceImpl implements UserDetailsService {
         // authenticationToken 의 user/password 정보로 인증을 진행 문제 없으면 authentication 을 반환 
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
-        return jwtProvider.createToken(authentication);
+        // access token/refresh token 생성 
+        TokenDto tokenDto = TokenDto.builder()
+                                .accessToken(jwtProvider.createToken(authentication, JWTType.ACCESS_TOKEN))
+                                .refreshToken(jwtProvider.createToken(authentication, JWTType.REFRESH_TOKEN))
+                                .build();
+
+        refreshTokenDAO.saveToken(tokenDto);
+        
+        return tokenDto;
 
     }
     

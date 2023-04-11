@@ -8,6 +8,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.filter.CorsFilter;
+import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
 
 import com.common.seq.common.auth.JWTAuthenticationEntryPoint;
 import com.common.seq.common.auth.JWTAuthenticationFilter;
@@ -55,6 +56,7 @@ public class SequrityConfig {
             // api 경로 
             .and()
             .authorizeHttpRequests((authz) -> authz
+                .requestMatchers(toH2Console()).permitAll()
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
