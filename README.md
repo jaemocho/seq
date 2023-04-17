@@ -16,6 +16,11 @@
     [db]
     spring-boot-starter-data-jpa
     com.h2database
+
+    [test]
+    spring-boot-starter-test
+    spring-security-test
+
 ```
 
 > 어플리케이션 기동 스크립트
@@ -48,6 +53,7 @@
 
  - [spring security session](https://github.com/jaemocho/seq/wiki/Spring-Security-%EC%A0%81%EC%9A%A9)
  - [spring security jwt](https://github.com/jaemocho/seq/wiki/Spring-Security-JWT)
+ - [spring security test](https://github.com/jaemocho/seq/wiki/Spring-Security-test)
  - [profile 설정](https://github.com/jaemocho/seq/wiki/profile-%EB%B6%84%EB%A6%AC)
 
 > 어플리케이션 build
