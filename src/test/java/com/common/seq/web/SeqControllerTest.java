@@ -1,4 +1,4 @@
-package com.common.seq;
+package com.common.seq.web;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -23,14 +23,13 @@ import com.common.seq.web.auth.WithAuthUser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 
-
 @Transactional
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = WebEnvironment.MOCK) 
 @WithAuthUser(email = "test@gmail.com", role = "ROLE_USER") 
-class SeqApplicationTests {
-
-	@Autowired
+public class SeqControllerTest {
+    
+    @Autowired
 	private MockMvc mockMvc;
 
 	@Test
@@ -128,5 +127,4 @@ class SeqApplicationTests {
 			.andDo(MockMvcResultHandlers.print());	
 		}
 	}
-
 }

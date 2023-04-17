@@ -25,9 +25,9 @@ public class RefreshToken {
 	@GeneratedValue(strategy = GenerationType.IDENTITY) //해당 데이터베이스 번호증가 전략을 따라가겠다. 
 	private Long id;
 
-    @Column(unique= true, nullable = false)
+    @Column(name = "refresh_token", unique= true, nullable = false)
 	private String refreshToken;
     
-    @Column(unique= false, nullable = false)
+    @Column(name = "access_token", unique= false, nullable = false)
     private String accessToken;
 }

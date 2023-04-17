@@ -1,5 +1,6 @@
 package com.common.seq.web;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +24,12 @@ public class ShortenUrlController {
     
     private final ShortenUrlService shortenUrlService;
 
+    @Value("${naver.api.client.id}")
+    private String CLIENT_ID;
+
+    @Value("${naver.api.client.secret}")
+    private String CLIENT_SECRET;
+
     @Operation(summary = "단축 url 생성", description = "단축 url 생성", tags = { "ShortenUrl Controller" })
     @ApiResponses({
             @ApiResponse(
@@ -34,6 +41,6 @@ public class ShortenUrlController {
     @GetMapping(path = "/", produces = "application/json")
     public ResponseEntity<RespShortenUrlDto> getShortenUrl(String originUrl) {
         
-        return new ResponseEntity<RespShortenUrlDto>(shortenUrlService.genShortenUrl(originUrl), HttpStatus.OK);
+        return new ResponseEntity<RespShortenUrlDto>(shortenUrlService.genShortenUrl(originUrl, CLIENT_ID, CLIENT_SECRET), HttpStatus.OK);
 	}
 }

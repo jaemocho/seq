@@ -3,7 +3,6 @@ package com.common.seq.service.impl;
 import java.net.URI;
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -28,14 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 public class ShortenUrlServiceImpl implements ShortenUrlService {
 
     private final ShortenUrlDAO shortenUrlDAO;
-    
-    @Value("${naver.api.client.id}")
-    private String CLIENT_ID;
 
-    @Value("${naver.api.client.secret}")
-    private String CLIENT_SECRET;
-
-    private ResponseEntity<RespShortenUrl> requestShortenUrl(String originUrl)  {
+    private ResponseEntity<RespShortenUrl> requestShortenUrl(String originUrl, String CLIENT_ID, String CLIENT_SECRET)  {
 
         URI uri = UriComponentsBuilder
         .fromUriString("https://openapi.naver.com")
@@ -62,13 +55,13 @@ public class ShortenUrlServiceImpl implements ShortenUrlService {
         return responseEntity;
     }
 
-    public RespShortenUrlDto genShortenUrl(String originUrl) {
+    public RespShortenUrlDto genShortenUrl(String originUrl, String CLIENT_ID, String CLIENT_SECRET) {
 
         ShortenUrl shortenUrl = shortenUrlDAO.findByOrgUrl(originUrl);
         log.info("originUrl : {}" , originUrl);
         
         if (shortenUrl == null)  {
-            ResponseEntity<RespShortenUrl> responseEntity = requestShortenUrl(originUrl);
+            ResponseEntity<RespShortenUrl> responseEntity = requestShortenUrl(originUrl, CLIENT_ID, CLIENT_SECRET);
             shortenUrl = shortenUrlDAO.save(
                 ShortenUrl.builder()
                     .orgUrl(originUrl)

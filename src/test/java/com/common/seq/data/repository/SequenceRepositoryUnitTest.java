@@ -7,18 +7,12 @@ import java.util.Date;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-
 import com.common.seq.data.entity.Sequence;
-import jakarta.transaction.Transactional;
 
-@Transactional
-@AutoConfigureTestDatabase(replace= Replace.ANY) 
-@DataJpaTest
-public class SequenceRepositoryUnitTest {
-    
+
+public class SequenceRepositoryUnitTest extends BaseRepositoryTest{
+
+
     @Autowired
     private SequenceRepository sequenceRepository;
 

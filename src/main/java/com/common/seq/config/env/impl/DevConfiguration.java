@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 @Profile("dev")
 @Configuration
 public class DevConfiguration implements EnvConfiguration {
-    
     @Value("${common.loading.message}")
     private String message;
 

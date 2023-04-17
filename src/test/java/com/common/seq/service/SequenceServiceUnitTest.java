@@ -22,11 +22,12 @@ import com.common.seq.service.impl.SequenceServiceImpl;
 
 @ExtendWith(SpringExtension.class)
 public class SequenceServiceUnitTest {
+
+    @Mock 
+	private SequenceDAO sequenceDAO;
+    
     @InjectMocks
 	private SequenceServiceImpl sequenceService;
-	
-	@Mock 
-	private SequenceDAO sequenceDAO;
 
     @Test
     public void get_test() {

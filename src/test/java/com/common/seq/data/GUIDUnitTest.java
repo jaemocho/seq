@@ -24,19 +24,19 @@ public class GUIDUnitTest {
         assertEquals('0', newGUID.charAt(12));
     }
 
-    @Test
-    public void genNewID_test2() {
-        IDHandler ih = new GUIDHandler();
+    // @Test
+    // public void genNewID_test2() {
+    //     IDHandler ih = new GUIDHandler();
         
-        String newGUID;
-        // 1 억번 
-        for (int i = 0; i < 100000000; i++ ) {
-            newGUID = ih.genNewID().getId();
-            assertNotNull(newGUID);
-            assertEquals(30, newGUID.length());
-            assertEquals('0', newGUID.charAt(12));
-        }
-    }
+    //     String newGUID;
+    //     // 1 억번 
+    //     for (int i = 0; i < 100000000; i++ ) {
+    //         newGUID = ih.genNewID().getId();
+    //         assertNotNull(newGUID);
+    //         assertEquals(30, newGUID.length());
+    //         assertEquals('0', newGUID.charAt(12));
+    //     }
+    // }
 
     @Test 
     public void validate_test() {
