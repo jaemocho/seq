@@ -43,7 +43,9 @@
     + dao                   … database access
     + dto                   … layer간 data 전송 객체 
     + entity                … database table
+      + shop                … shop table
     + repository            … jpa repository interface 
+      + shop                … shop repository interface
   + service                 … spring service layer
   + web                     … spring controller layer
   - SeqApplication.java     … Entry Point.
@@ -89,6 +91,12 @@
  - http://localhost:8080/swagger-ui/index.html#/ 
 
     ![default](image/swagger_main.PNG)
+
+
+> shop entity 
+ - Diagram
+ - path (com/common/seq/data/entity/shop)
+   ![default](image/shop_entity_diagram.PNG)
 
 
 > 성능 테스트(API 서버의 최대 처리량을 산정)
