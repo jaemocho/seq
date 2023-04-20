@@ -23,17 +23,23 @@ public class CategoryRepositoryUnitTest extends BaseRepositoryTest{
     public void category_test() {
         
         // category 초기 date insert
-        Category category1 = new Category();
-        category1.setName("WOMEN");
+        Category category1 = Category.builder()
+                                .name("WOMEN")
+                                .build();
 
-        Category category2= new Category();
-        category2.setName("MEN");
+        
+        Category category2 = Category.builder()
+                                .name("MEN")
+                                .build();        
 
-        Category category3 = new Category();
-        category3.setName("KIDS");
+        Category category3 = Category.builder()
+                                .name("KIDS")
+                                .build();
 
-        Category category4 = new Category();
-        category4.setName("BABY");
+        Category category4 = Category.builder()
+                                .name("BABY")
+                                .build();                                
+        
 
         categoryRepository.save(category1);
         categoryRepository.save(category2);
@@ -53,18 +59,21 @@ public class CategoryRepositoryUnitTest extends BaseRepositoryTest{
         assertEquals(3, categorys.size());
 
         // category 에 item 추가 후 조회 테스트 
-        Category womenCategory = categoryRepository.findByName("WOMEN");
+        categorys = categoryRepository.findByName("WOMEN");
+        Category womenCategory = categorys.get(0);
 
         // item insert
-        Item item1 = new Item();
-        item1.setName("women's T shirt");
-        item1.setPrice(5000);;
-        item1.setRemainQty(0);
+        Item item1 = Item.builder()
+                        .name("women's T shirt")
+                        .price(5000)
+                        .remainQty(0)
+                        .build();
 
-        Item item2 = new Item();
-        item2.setName("women's T dress");
-        item2.setPrice(50000);;
-        item2.setRemainQty(50);
+        Item item2 = Item.builder()
+                        .name("women's T dress")
+                        .price(50000)
+                        .remainQty(50)
+                        .build();                        
         
         // item 저장
         itemRepository.save(item1);
@@ -78,7 +87,8 @@ public class CategoryRepositoryUnitTest extends BaseRepositoryTest{
         
         categoryRepository.flush();
 
-        womenCategory = categoryRepository.findByName("WOMEN");
+        categorys = categoryRepository.findByName("WOMEN");
+        womenCategory = categorys.get(0);
         assertEquals(2, womenCategory.getItems().size());
     }
 

@@ -22,11 +22,13 @@ public class OrderRepositoryUnitTest extends BaseRepositoryTest {
         SimpleDateFormat dtFormat = new SimpleDateFormat("yyyyMMdd");
         
         // order 초기 data insert
-        Order order1 = new Order();
-        order1.setOrderDate(dtFormat.parse("20230416"));
+        Order order1 = Order.builder()
+                        .orderDate(dtFormat.parse("20230416"))
+                        .build();
 
-        Order order2 = new Order();
-        order2.setOrderDate(dtFormat.parse("20230417"));
+        Order order2 = Order.builder()
+                        .orderDate(dtFormat.parse("20230417"))
+                        .build();
 
         orderRepository.save(order1);
         orderRepository.save(order2);

@@ -20,7 +20,19 @@ public class CategoryDAOImpl implements CategoryDAO {
         return categoryRepository.save(category);
     }
 
-    public List<Category> getAllCategory() {
+    public List<Category> findAll() {
         return categoryRepository.findAll();
+    }
+
+    public List<Category> findByName(String name) {
+        return categoryRepository.findByName(name);
+    }
+
+    public Category findById(Long id) {
+        return categoryRepository.findById(id).orElse(null);
+    }
+
+    public void delete(Category category) {
+        categoryRepository.delete(category);
     }
 }

@@ -8,5 +8,11 @@ public interface CategoryDAO {
     
     public Category save(Category category);
 
-    public List<Category> getAllCategory();
+    public List<Category> findAll();
+
+    public List<Category> findByName(String name);
+
+    public Category findById(Long id);
+
+    public void delete(Category category);
 }

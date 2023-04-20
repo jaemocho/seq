@@ -9,14 +9,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-
+@Builder
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tb_shop_member")
@@ -32,6 +31,7 @@ public class Member {
     @Column(name = "phone_number", unique = false, nullable = false)
     private String phoneNumber;
 
+    @Builder.Default
     @OneToMany(mappedBy = "member")
     private List<Order> orders = new ArrayList<Order>();
 
@@ -41,6 +41,11 @@ public class Member {
         if(order.getMember() != this) {
             order.setMember(this);
         }
+    }
+
+    public void updateMember(String address, String phoneNumber){
+        this.address = address;
+        this.phoneNumber = phoneNumber;
     }
 
 }

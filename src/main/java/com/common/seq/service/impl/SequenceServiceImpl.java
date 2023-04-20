@@ -42,9 +42,9 @@ public class SequenceServiceImpl implements SequenceService{
         // log.error(sequence.getId() +" "+ sequence.getSeq() + " " + seqMaxVal.equals(sequence.getSeq()) );  
         
         if ( seqMaxVal.equals(sequence.getSeq())) {
-            sequence.setSeq(1L) ;   
+            sequence.updateSeq(1L) ;   
         } else {
-            sequence.setSeq(sequence.getSeq()+1);
+            sequence.updateSeq(sequence.getSeq()+1);
         }
         return sequence;
     }

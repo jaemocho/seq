@@ -1,4 +1,4 @@
-# Spring boot 
+# sequence 생성, shorten url 발행(naver api), shop domain
 
 > Import API list
 
@@ -51,12 +51,13 @@
   - SeqApplication.java     … Entry Point.
   ```
 
-> wiki
+> wiki 
+ - spring security 작업 내용, profile 설정 작업 내용 정리
 
- - [spring security session](https://github.com/jaemocho/seq/wiki/Spring-Security-%EC%A0%81%EC%9A%A9)
- - [spring security jwt](https://github.com/jaemocho/seq/wiki/Spring-Security-JWT)
- - [spring security test](https://github.com/jaemocho/seq/wiki/Spring-Security-test)
- - [profile 설정](https://github.com/jaemocho/seq/wiki/profile-%EB%B6%84%EB%A6%AC)
+    - [spring security session](https://github.com/jaemocho/seq/wiki/Spring-Security-%EC%A0%81%EC%9A%A9)
+    - [spring security jwt](https://github.com/jaemocho/seq/wiki/Spring-Security-JWT)
+    - [spring security test](https://github.com/jaemocho/seq/wiki/Spring-Security-test)
+    - [profile 설정](https://github.com/jaemocho/seq/wiki/profile-%EB%B6%84%EB%A6%AC)
 
 > 어플리케이션 build
 
@@ -92,12 +93,29 @@
 
     ![default](image/swagger_main.PNG)
 
+> shortenUrl (naver api)
+  
+  - 내용 작성 필요
+  - /api/v1/shorten-url/ 
+
+> sequence & unique id 발행
+  
+  - 내용 작성 필요
+  - /api/v1/seq/sequence
+  - /api/v1/seq/guid
 
 > shop entity 
  - Diagram
  - path (com/common/seq/data/entity/shop)
    ![default](image/shop_entity_diagram.PNG)
 
+
+> shop 구성 [진행 중]
+ 
+ - category/item service 까지 구현 
+
+ - 기본 Layered Architecture로 구성
+   ![default](image/layer_arch.PNG)
 
 > 성능 테스트(API 서버의 최대 처리량을 산정)
 

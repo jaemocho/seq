@@ -30,22 +30,25 @@ public class OrderItemRepositoryUnitTest extends BaseRepositoryTest{
         SimpleDateFormat dtFormat = new SimpleDateFormat("yyyyMMdd");
         
         // order 초기 data insert
-        Order order = new Order();
-        order.setOrderDate(dtFormat.parse("20230416"));
+        Order order = Order.builder()
+                        .orderDate(dtFormat.parse("20230416"))
+                        .build();
         
         orderRepository.save(order);
         orderRepository.flush();
 
         // item 초기 data insert
-        Item item1 = new Item();
-        item1.setName("T-shirt");
-        item1.setPrice(500);
-        item1.setRemainQty(500);
+        Item item1 = Item.builder()
+                        .name("T-shirt")
+                        .price(500)
+                        .remainQty(500)
+                        .build();
 
-        Item item2 = new Item();
-        item2.setName("Y-shirt");
-        item2.setPrice(300);
-        item2.setRemainQty(500);
+        Item item2 = Item.builder()
+                        .name("Y-shirt")
+                        .price(300)
+                        .remainQty(500)
+                        .build();
 
         
         itemRepository.save(item1);
@@ -56,15 +59,17 @@ public class OrderItemRepositoryUnitTest extends BaseRepositoryTest{
         // order 
         // T-shirt 3개 주문 
         // Y-shirt 2개 주문 
-        OrderItem orderItem1 = new OrderItem();
-        orderItem1.setOrder(order);
-        orderItem1.setItem(item1);
-        orderItem1.setCount(3);
+        OrderItem orderItem1 = OrderItem.builder()
+                                .order(order)
+                                .item(item1)
+                                .count(3)
+                                .build();
 
-        OrderItem orderItem2 = new OrderItem();
-        orderItem2.setOrder(order);
-        orderItem2.setItem(item2);
-        orderItem2.setCount(2);
+        OrderItem orderItem2 = OrderItem.builder()
+                                .order(order)
+                                .item(item2)
+                                .count(2)
+                                .build();
 
         orderItemRepository.save(orderItem1);
         orderItemRepository.save(orderItem2);

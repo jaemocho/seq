@@ -12,15 +12,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-
+@Builder
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Table(name = "tb_shop_item")
 public class Item {
     
@@ -48,6 +45,12 @@ public class Item {
         if(!category.getItems().contains(this)){
             category.getItems().add(this);
         }
+    }
+
+    public void updateItem(String name, int price, int remainQty){
+        this.name = name;
+        this.price = price;
+        this.remainQty = remainQty;
     }
 
 }

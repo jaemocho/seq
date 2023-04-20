@@ -11,14 +11,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-
+@Builder
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tb_shop_category")
@@ -32,6 +31,7 @@ public class Category {
     @Column(unique= true, nullable = false)
 	private String name;
     
+    @Builder.Default
     @OneToMany(mappedBy = "category")
     private List<Item> items = new ArrayList<Item>();
 

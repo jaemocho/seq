@@ -19,15 +19,17 @@ public class MemberRepositoryUnitTest extends BaseRepositoryTest {
     public void member_test(){
 
         // 초기 member date insert 
-        Member member1 = new Member();
-        member1.setId("memberA");
-        member1.setAddress("서울 여기 저기");
-        member1.setPhoneNumber("010 1234 5678");
+        Member member1 = Member.builder()
+                            .id("memberA")
+                            .address("서울 여기 저기")
+                            .phoneNumber("010 1234 5678")
+                            .build();
 
-        Member member2 = new Member();
-        member2.setId("memberB");
-        member2.setAddress("수원 여기 저기");
-        member2.setPhoneNumber("010 1234 7890");
+        Member member2 = Member.builder()
+                            .id("memberB")
+                            .address("수원 여기 저기")
+                            .phoneNumber("010 1234 7890")
+                            .build();
 
         memberRepository.save(member1);
         memberRepository.save(member2);
@@ -43,7 +45,7 @@ public class MemberRepositoryUnitTest extends BaseRepositoryTest {
         assertEquals("서울 여기 저기", findMember.getAddress());
 
         // memberA 정보 update 테스트 
-        findMember.setAddress("부산 여기 저기");
+        findMember.updateMember("부산 여기 저기", findMember.getPhoneNumber());
         memberRepository.flush();
         findMember = memberRepository.findById("memberA").orElse(null);
         assertEquals("부산 여기 저기", findMember.getAddress());

@@ -14,7 +14,6 @@ import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -28,6 +27,9 @@ public class RefreshToken {
     @Column(name = "refresh_token", unique= true, nullable = false)
 	private String refreshToken;
     
+    @Setter
     @Column(name = "access_token", unique= false, nullable = false)
     private String accessToken;
+
+
 }

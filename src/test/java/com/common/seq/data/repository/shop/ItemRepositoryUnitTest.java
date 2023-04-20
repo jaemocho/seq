@@ -23,11 +23,14 @@ public class ItemRepositoryUnitTest  extends BaseRepositoryTest {
     public void category_test() {
 
         // category 초기 값 insert
-        Category category1 = new Category();
-        category1.setName("WOMEN");
+        Category category1 = Category.builder()
+                                .name("WOMEN")
+                                .build();
 
-        Category category2= new Category();
-        category2.setName("MEN");
+        
+        Category category2 = Category.builder()
+                                .name("MEN")
+                                .build();     
 
         categoryRepository.save(category1);
         categoryRepository.save(category2);
@@ -35,20 +38,24 @@ public class ItemRepositoryUnitTest  extends BaseRepositoryTest {
         categoryRepository.flush();
         
         // item insert
-        Item item1 = new Item();
-        item1.setName("women's T shirt");
-        item1.setPrice(5000);;
-        item1.setRemainQty(0);
+        Item item1 = Item.builder()
+                        .name("women's T shirt")
+                        .price(5000)
+                        .remainQty(0)
+                        .build();
 
-        Item item2 = new Item();
-        item2.setName("women's T dress");
-        item2.setPrice(50000);;
-        item2.setRemainQty(50);
+        Item item2 = Item.builder()
+                        .name("women's T dress")
+                        .price(50000)
+                        .remainQty(50)
+                        .build();  
 
-        Item item3 = new Item();
-        item3.setName("men's T shirt");
-        item3.setPrice(55000);;
-        item3.setRemainQty(50);
+        Item item3 = Item.builder()
+                        .name("men's T dress")
+                        .price(55000)
+                        .remainQty(50)
+                        .build();  
+
 
         // item의 category 지정
         item1.setCategory(category1);
@@ -86,9 +93,46 @@ public class ItemRepositoryUnitTest  extends BaseRepositoryTest {
         assertEquals(2, items.size());
 
         // qty update test 
-        item2.setRemainQty(10000);
+        item2.updateItem(item2.getName(), item2.getPrice(), 10000);
         itemRepository.flush();
         assertEquals(10000,itemRepository.findById(item2.getId()).orElse(null).getRemainQty());
         
+    }
+
+    @Test
+    public void itemUpdate_test() {
+        
+        // 초기 item data insert
+        Item item = Item.builder()
+                        .name("T shirt")
+                        .price(5000)
+                        .remainQty(0)
+                        .build();
+
+        itemRepository.save(item);
+        itemRepository.flush();
+
+        // select for update 
+        /* Hibernate: 
+        select
+            i1_0.ITEM_ID,
+            i1_0.CATEGORY_ID,
+            i1_0.name,
+            i1_0.price,
+            i1_0.remain_qty 
+        from
+            tb_shop_item i1_0 
+        where
+            i1_0.ITEM_ID=? for update */
+        Item updateItem = itemRepository.findByIdForUpdate(item.getId());
+
+        // 가격 변경
+        updateItem.updateItem(updateItem.getName(), 500, updateItem.getRemainQty());;
+        itemRepository.flush();
+
+        item = itemRepository.findById(item.getId()).orElse(null);
+
+        assertEquals(500, item.getPrice());
+
     }
 }

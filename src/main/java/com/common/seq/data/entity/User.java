@@ -21,7 +21,6 @@ import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -39,6 +38,7 @@ public class User extends BaseEntity implements UserDetails{
     @Column(nullable = false)
     private String pwd;
     
+    @Setter
     @Column
     private LocalDateTime lastLoginTime;
 
