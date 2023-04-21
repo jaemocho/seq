@@ -1,6 +1,7 @@
 package com.common.seq.service.shop;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -57,7 +58,7 @@ public class ItemServiceUnitTest {
 
 
         when(categoryDAO.findById(reqItemDto.getCategoryId())).thenReturn(category);
-        when(itemDAO.save(item)).thenReturn(item);
+        when(itemDAO.save(any(Item.class))).thenReturn(item);
 
         //when
         Item returnitem = itemService.addItem(reqItemDto);
@@ -130,29 +131,29 @@ public class ItemServiceUnitTest {
                                 .name("WOMEN")
                                 .build();
 
-                                Item item1 = Item.builder()
-                                .id(1L)
-                                .name("T-shirt")
-                                .price(5000)
-                                .remainQty(100)
-                                .category(category)
-                                .build();
+        Item item1 = Item.builder()
+                        .id(1L)
+                        .name("T-shirt")
+                        .price(5000)
+                        .remainQty(100)
+                        .category(category)
+                        .build();
         
-                Item item2 = Item.builder()
-                                .id(2L)
-                                .name("T-shirt")
-                                .price(5000)
-                                .remainQty(100)
-                                .category(category)
-                                .build();
+        Item item2 = Item.builder()
+                        .id(2L)
+                        .name("T-shirt")
+                        .price(5000)
+                        .remainQty(100)
+                        .category(category)
+                        .build();
         
-                Item item3 = Item.builder()
-                                .id(3L)
-                                .name("T-shirt")
-                                .price(5000)
-                                .remainQty(100)
-                                .category(category)
-                                .build();
+        Item item3 = Item.builder()
+                        .id(3L)
+                        .name("T-shirt")
+                        .price(5000)
+                        .remainQty(100)
+                        .category(category)
+                        .build();
 
         List<Item> items = new ArrayList<Item>();
         items.add(item1);
@@ -175,5 +176,36 @@ public class ItemServiceUnitTest {
         }
 
         assertEquals(3, categoryCnt);
+    }
+
+    @Test
+    public void updateItem_test() {
+        
+        // given
+        ReqItemDto reqItemDto = ReqItemDto.builder()
+                                    .name("T-shirt")
+                                    .price(400)
+                                    .remainQty(200)
+                                    .build();
+
+        Item item1 = Item.builder()
+                        .id(1L)
+                        .name("T-shirt")
+                        .price(5000)
+                        .remainQty(100)
+                        .build();
+        
+
+        when(itemDAO.findByIdForUpdate(item1.getId())).thenReturn(item1);
+
+        // when 
+        itemService.updateItem(item1.getId(), reqItemDto);
+
+        // then
+        assertEquals(400, item1.getPrice());
+        assertEquals(200, item1.getRemainQty());
+        
+
+
     }
 }

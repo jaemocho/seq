@@ -41,8 +41,6 @@ public class ItemServiceImpl implements ItemService {
 
         item.setCategory(category);
 
-        itemDAO.save(item);
-
         return item;
     }
 
@@ -65,30 +63,18 @@ public class ItemServiceImpl implements ItemService {
 
         List<RespItemDto> respItemDtos = new ArrayList<RespItemDto>();
 
-        Category category = null;
-        Long categoryId;
-        String categoryName;
-
         for (Item i : items) {
-            
-            categoryId = -1L;
-            categoryName = "";
-            
-            category = i.getCategory();
-            if ( category != null) {
-                categoryId = category.getId();
-                categoryName = category.getName();
-            }
-
-            respItemDtos.add(RespItemDto.builder()
-                            .name(i.getName())
-                            .price(i.getPrice())
-                            .remainQty(i.getRemainQty())
-                            .categoryId(categoryId)
-                            .categoryName(categoryName)
-                            .build());
+            respItemDtos.add(entityToRespDto(i));
         }
         return respItemDtos;
+    }
+
+    @Transactional(readOnly = true)
+    public RespItemDto getItemById(Long id) {
+        
+        Item item = itemDAO.findById(id);
+        
+        return entityToRespDto(item);
     }
 
 
@@ -101,19 +87,14 @@ public class ItemServiceImpl implements ItemService {
 
         for (Item i : items) {
 
-            respItemDtos.add(RespItemDto.builder()
-                            .name(i.getName())
-                            .price(i.getPrice())
-                            .remainQty(i.getRemainQty())
-                            .categoryId(i.getCategory().getId())
-                            .categoryName(i.getCategory().getName())
-                            .build());
+            respItemDtos.add(entityToRespDto(i));
         }
         return respItemDtos;
     }
 
     @Transactional
     public void updateItem(Long id, ReqItemDto reqItemDto) {
+        
         Item item = itemDAO.findByIdForUpdate(id);
 
         if(item == null) {
@@ -122,5 +103,25 @@ public class ItemServiceImpl implements ItemService {
         }
 
         item.updateItem(reqItemDto.getName(), reqItemDto.getPrice(), reqItemDto.getRemainQty());
+    }
+
+    private RespItemDto entityToRespDto(Item i) {
+
+        Category category = i.getCategory();
+        Long categoryId = -1L;
+        String categoryName = "";
+
+        if ( category != null) {
+            categoryId = category.getId();
+            categoryName = category.getName();
+        }
+
+        return RespItemDto.builder()
+                        .name(i.getName())
+                        .price(i.getPrice())
+                        .remainQty(i.getRemainQty())
+                        .categoryId(categoryId)
+                        .categoryName(categoryName)
+                        .build();
     }
 }

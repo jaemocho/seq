@@ -112,7 +112,8 @@
 
 > shop 구성 [진행 중]
  
- - category/item service 까지 구현 
+ - Service category/item/member 
+ - Controller  
 
  - 기본 Layered Architecture로 구성
    ![default](image/layer_arch.PNG)

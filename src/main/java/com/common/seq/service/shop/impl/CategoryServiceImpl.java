@@ -51,10 +51,7 @@ public class CategoryServiceImpl implements CategoryService{
         List<RespCategoryDto> respCategoryDtos = new ArrayList<RespCategoryDto>();
 
         for (Category c : categorys) {
-            respCategoryDtos.add(RespCategoryDto.builder()
-                                                .id(c.getId())
-                                                .name(c.getName())
-                                                .build());
+            respCategoryDtos.add(entityToRespDto(c));
         }
         return respCategoryDtos;
 
@@ -68,10 +65,7 @@ public class CategoryServiceImpl implements CategoryService{
         List<RespCategoryDto> respCategoryDtos = new ArrayList<RespCategoryDto>();
 
         for (Category c : categorys) {
-            respCategoryDtos.add(RespCategoryDto.builder()
-                                                .id(c.getId())
-                                                .name(c.getName())
-                                                .build());
+            respCategoryDtos.add(entityToRespDto(c));
         }
         return respCategoryDtos;
     }
@@ -81,11 +75,16 @@ public class CategoryServiceImpl implements CategoryService{
         
         Category category = categoryDAO.findById(id);
 
-        RespCategoryDto respCategoryDto = RespCategoryDto.builder()
-                                            .id(category.getId())
-                                            .name(category.getName())
-                                            .build();
+        return entityToRespDto(category);
+    }
 
-        return respCategoryDto;
+    private RespCategoryDto entityToRespDto(Category c) {
+
+        if ( c == null ) return null;
+
+        return RespCategoryDto.builder()
+                                .id(c.getId())
+                                .name(c.getName())
+                                .build();
     }
 }
