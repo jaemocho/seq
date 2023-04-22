@@ -181,6 +181,7 @@ public class OrderServiceImpl implements OrderService  {
 
     }
 
+    @Transactional
     public void updateOrderStatus(Long orderId, OrderState orderState) throws ShopException {
         // order 는 공유자원이 아니라 for update 없이 
         Order order = orderDAO.findById(orderId);

@@ -112,7 +112,7 @@
 
 > shop 구성 [진행 중]
  
- - Service category/item/member 
+ - Service category/item/member/order(orderitem/order)
  - Controller  
 
  - 기본 Layered Architecture로 구성
