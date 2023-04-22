@@ -1,5 +1,10 @@
 package com.common.seq.data.entity.shop;
 
+import org.springframework.http.HttpStatus;
+
+import com.common.seq.common.Constants.ExceptionClass;
+import com.common.seq.common.exception.ShopException;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,8 +35,8 @@ public class Item {
     private String name;
     
     @Column(unique= false, nullable = false)
-    private int price;
 
+    private int price;
     @Column(name = "remain_qty",  unique= false, nullable = false)
     private int remainQty;
 
@@ -51,6 +56,17 @@ public class Item {
         this.name = name;
         this.price = price;
         this.remainQty = remainQty;
+    }
+
+    public void addRemainQty(int requestQty) {
+        this.remainQty += requestQty;
+    }
+
+    public void removeRemainQty(int requestQty) throws ShopException {
+        if ( requestQty > this.remainQty ) {
+            throw new ShopException(ExceptionClass.SHOP, HttpStatus.BAD_REQUEST, "not enough remainQty");
+        }
+        this.remainQty -= requestQty;
     }
 
 }

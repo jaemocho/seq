@@ -8,6 +8,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.common.seq.common.ShopConstants.OrderState;
+import com.common.seq.data.entity.shop.Category;
 import com.common.seq.data.entity.shop.Item;
 import com.common.seq.data.entity.shop.Order;
 import com.common.seq.data.entity.shop.OrderItem;
@@ -24,6 +26,9 @@ public class OrderItemRepositoryUnitTest extends BaseRepositoryTest{
     @Autowired
     private OrderItemRepository orderItemRepository;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     @Test
     public void orderItem_test() throws Exception{
 
@@ -32,10 +37,17 @@ public class OrderItemRepositoryUnitTest extends BaseRepositoryTest{
         // order 초기 data insert
         Order order = Order.builder()
                         .orderDate(dtFormat.parse("20230416"))
+                        .orderState(OrderState.REQUEST)
                         .build();
         
         orderRepository.save(order);
         orderRepository.flush();
+
+        Category category = Category.builder()
+                                    .name("MEN")
+                                    .build();
+        categoryRepository.save(category);
+        categoryRepository.flush();
 
         // item 초기 data insert
         Item item1 = Item.builder()
@@ -50,6 +62,8 @@ public class OrderItemRepositoryUnitTest extends BaseRepositoryTest{
                         .remainQty(500)
                         .build();
 
+        item1.setCategory(category);
+        item2.setCategory(category);
         
         itemRepository.save(item1);
         itemRepository.save(item2);
@@ -60,17 +74,18 @@ public class OrderItemRepositoryUnitTest extends BaseRepositoryTest{
         // T-shirt 3개 주문 
         // Y-shirt 2개 주문 
         OrderItem orderItem1 = OrderItem.builder()
-                                .order(order)
                                 .item(item1)
                                 .count(3)
                                 .build();
 
         OrderItem orderItem2 = OrderItem.builder()
-                                .order(order)
                                 .item(item2)
                                 .count(2)
                                 .build();
-
+        
+        orderItem1.setOrder(order);
+        orderItem2.setOrder(order);
+              
         orderItemRepository.save(orderItem1);
         orderItemRepository.save(orderItem2);
 

@@ -99,6 +99,9 @@ public class ItemServiceUnitTest {
                         .category(category)
                         .build();
 
+        item1.setCategory(category);
+        item3.setCategory(category);
+                                
         List<Item> items = new ArrayList<Item>();
         items.add(item1);
         items.add(item2);

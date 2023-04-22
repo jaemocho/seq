@@ -4,7 +4,7 @@ public class Constants {
 
     public enum ExceptionClass {
 
-        SEQUENCE("Sequence"), SHORTENURL("ShortenUrl");
+        SEQUENCE("Sequence"), SHORTENURL("ShortenUrl"), SHOP("Shop");
 
         private String exceptionClass;
 

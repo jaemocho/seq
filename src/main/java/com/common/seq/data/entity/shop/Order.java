@@ -5,8 +5,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.common.seq.common.ShopConstants.OrderState;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -39,7 +43,7 @@ public class Order {
     private Member member;
 
     public void setMember(Member member) {
-        this.setMember(member);
+        this.member = member;
 
         if(!member.getOrders().contains(this)) {
             member.getOrders().add(this);
@@ -63,5 +67,13 @@ public class Order {
     @Temporal(TemporalType.DATE)
     @Column(name = "order_date", unique= false, nullable = false)
     private Date orderDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_type", unique= false, nullable = false)
+    private OrderState orderState;
+
+    public void updateOrderStatus(OrderState orderState) {
+        this.orderState = orderState;
+    }
 
 }
