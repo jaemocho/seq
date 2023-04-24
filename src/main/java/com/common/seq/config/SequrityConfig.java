@@ -60,6 +60,7 @@ public class SequrityConfig {
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/v1/shop/**").permitAll()
                 .anyRequest().authenticated())
             
             .addFilter(corsFilter)

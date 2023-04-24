@@ -3,9 +3,12 @@ package com.common.seq.service.shop.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.common.seq.common.Constants.ExceptionClass;
+import com.common.seq.common.exception.ShopException;
 import com.common.seq.data.dao.shop.CategoryDAO;
 import com.common.seq.data.dao.shop.ItemDAO;
 import com.common.seq.data.dto.shop.ReqItemDto;
@@ -35,22 +38,23 @@ public class ItemServiceImpl implements ItemService {
 
         Category category = categoryDAO.findById(reqItemDto.getCategoryId());
 
-        if( category == null) {
-            // exception category 등록을 안해도되긴 하지 
+        if( category != null) {
+            item.setCategory(category);
         }
 
-        item.setCategory(category);
-
+        itemDAO.save(item);
+        
         return item;
     }
 
     @Transactional
-    public void removeItem(Long id) {
+    public void removeItem(Long id) throws ShopException {
 
         Item item = itemDAO.findById(id);
         
         if( item == null) {
-            // exception
+            throw new ShopException(ExceptionClass.SHOP
+            , HttpStatus.BAD_REQUEST, "Not Found Item"); 
         }
 
         itemDAO.delete(item);
@@ -70,9 +74,14 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Transactional(readOnly = true)
-    public RespItemDto getItemById(Long id) {
+    public RespItemDto getItemById(Long id) throws ShopException {
         
         Item item = itemDAO.findById(id);
+
+        if( item == null) {
+            throw new ShopException(ExceptionClass.SHOP
+            , HttpStatus.BAD_REQUEST, "Not Found Item"); 
+        }
         
         return entityToRespDto(item);
     }
@@ -93,13 +102,13 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Transactional
-    public void updateItem(Long id, ReqItemDto reqItemDto) {
+    public void updateItem(Long id, ReqItemDto reqItemDto) throws ShopException{
         
         Item item = itemDAO.findByIdForUpdate(id);
 
         if(item == null) {
-            // exception 
-            return;
+            throw new ShopException(ExceptionClass.SHOP
+            , HttpStatus.BAD_REQUEST, "Not Found Item"); 
         }
 
         item.updateItem(reqItemDto.getName(), reqItemDto.getPrice(), reqItemDto.getRemainQty());
@@ -117,6 +126,7 @@ public class ItemServiceImpl implements ItemService {
         }
 
         return RespItemDto.builder()
+                        .id(i.getId())
                         .name(i.getName())
                         .price(i.getPrice())
                         .remainQty(i.getRemainQty())

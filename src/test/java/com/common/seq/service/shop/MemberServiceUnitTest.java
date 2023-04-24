@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import com.common.seq.common.exception.ShopException;
 import com.common.seq.data.dao.shop.MemberDAO;
 import com.common.seq.data.dto.shop.ReqMemberDto;
 import com.common.seq.data.dto.shop.RespMemberDto;
@@ -59,7 +60,7 @@ public class MemberServiceUnitTest {
     }
 
     @Test
-    public void addMember_test() {
+    public void addMember_test() throws ShopException {
 
         //given 
         ReqMemberDto reqMemberDto = ReqMemberDto.builder()
@@ -102,7 +103,7 @@ public class MemberServiceUnitTest {
     }
 
     @Test
-    public void getMemberById_test() {
+    public void getMemberById_test() throws ShopException {
 
         // given
         List<Member> members = initMemberData();
@@ -119,7 +120,7 @@ public class MemberServiceUnitTest {
     }
 
     @Test
-    public void updateMember_test() {
+    public void updateMember_test() throws ShopException {
 
         // given
         ReqMemberDto reqMemberDto = ReqMemberDto.builder()

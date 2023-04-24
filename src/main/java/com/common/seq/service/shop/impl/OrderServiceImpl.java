@@ -29,13 +29,13 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class OrderServiceImpl implements OrderService  {
     
-    private OrderDAO orderDAO;
+    private final OrderDAO orderDAO;
 
-    private OrderItemDAO orderItemDAO;
+    private final OrderItemDAO orderItemDAO;
 
-    private ItemDAO itemDAO;
+    private final ItemDAO itemDAO;
 
-    private MemberDAO memberDAO;
+    private final MemberDAO memberDAO;
 
     @Transactional
     public Long createOrder(ReqOrderDto reqOrderDto) throws ShopException {
@@ -77,6 +77,7 @@ public class OrderServiceImpl implements OrderService  {
 
                 orderItem = OrderItem.builder()
                             .item(item)
+                            .count(requestItem.getRequestQty())
                             .build();
                 orderItem.setOrder(order);
 

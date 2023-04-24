@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import com.common.seq.common.exception.ShopException;
 import com.common.seq.data.dao.shop.CategoryDAO;
 import com.common.seq.data.dto.shop.ReqCategoryDto;
 import com.common.seq.data.dto.shop.RespCategoryDto;
@@ -28,7 +29,7 @@ public class CategoryServiceUnitTest {
 	private CategoryServiceImpl categoryService;
 
     @Test
-    public void addCategory_test() {
+    public void addCategory_test() throws ShopException { 
 
         //given
         ReqCategoryDto reqCategoryDto = ReqCategoryDto.builder()
@@ -51,7 +52,7 @@ public class CategoryServiceUnitTest {
     }
 
     @Test
-    public void getAllCategory_test() {
+    public void getAllCategory_test() throws ShopException {
 
         //given
         Category category1 = Category.builder()

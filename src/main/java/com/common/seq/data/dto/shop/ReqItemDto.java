@@ -1,5 +1,6 @@
 package com.common.seq.data.dto.shop;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,13 +9,14 @@ import lombok.Getter;
 @Builder
 public class ReqItemDto {
     
-    private Long id;
-
+    @NotNull
     private String name;
     
-    private int price;
+    @NotNull
+    private Integer price;
 
-    private int remainQty;
+    @NotNull
+    private Integer remainQty;
 
     private Long categoryId;
 }

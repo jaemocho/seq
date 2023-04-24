@@ -3,9 +3,12 @@ package com.common.seq.service.shop.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.common.seq.common.Constants.ExceptionClass;
+import com.common.seq.common.exception.ShopException;
 import com.common.seq.data.dao.shop.CategoryDAO;
 import com.common.seq.data.dto.shop.ReqCategoryDto;
 import com.common.seq.data.dto.shop.RespCategoryDto;
@@ -29,16 +32,20 @@ public class CategoryServiceImpl implements CategoryService{
                             .build();
         
         categoryDAO.save(category);
+
     }
 
     @Transactional
-    public void removeCategory(Long id) {
+    public void removeCategory(Long id) throws ShopException{
 
         Category category = categoryDAO.findById(id);
         
         if( category == null) {
-            // exception     
+            throw new ShopException(ExceptionClass.SHOP
+            , HttpStatus.BAD_REQUEST, "Not Found Category"); 
         }
+
+        // item 삭제를 해야하나 ?
 
         categoryDAO.delete(category);
     }
@@ -71,9 +78,14 @@ public class CategoryServiceImpl implements CategoryService{
     }
 
     @Transactional(readOnly = true)
-    public RespCategoryDto getCategoryById(Long id) {
-        
+    public RespCategoryDto getCategoryById(Long id) throws ShopException {
+
         Category category = categoryDAO.findById(id);
+
+        if( category == null) {
+            throw new ShopException(ExceptionClass.SHOP
+            , HttpStatus.BAD_REQUEST, "Not Found Category"); 
+        }
 
         return entityToRespDto(category);
     }

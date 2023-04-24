@@ -3,9 +3,12 @@ package com.common.seq.service.shop.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.common.seq.common.Constants.ExceptionClass;
+import com.common.seq.common.exception.ShopException;
 import com.common.seq.data.dao.shop.MemberDAO;
 import com.common.seq.data.dto.shop.ReqMemberDto;
 import com.common.seq.data.dto.shop.RespMemberDto;
@@ -21,25 +24,32 @@ public class MemberServiceImpl implements MemberService {
     public final MemberDAO memberDAO;
     
     @Transactional
-    public Member addMember(ReqMemberDto reqMemberDto){
+    public Member addMember(ReqMemberDto reqMemberDto) throws ShopException {
+
+        Member member = memberDAO.findById(reqMemberDto.getId());
+
+        if( member != null) {
+            throw new ShopException(ExceptionClass.SHOP
+            , HttpStatus.BAD_REQUEST, "already exist memeber"); 
+        }
         
-        Member member = Member.builder()
+        Member newMember = Member.builder()
                             .id(reqMemberDto.getId()) 
                             .address(reqMemberDto.getAddress())
                             .phoneNumber(reqMemberDto.getPhoneNumber())
                             .build();
 
-        return memberDAO.save(member);
+        return memberDAO.save(newMember);
     }
 
     @Transactional
-    public void removeMember(String id) {
+    public void removeMember(String id) throws ShopException{
 
         Member member = memberDAO.findById(id);
 
         if( member == null ){
-            // exception
-            return ;
+            throw new ShopException(ExceptionClass.SHOP
+            , HttpStatus.BAD_REQUEST, "Not Found Member"); 
         }
 
         // member가 가지고 있는 order list 확인
@@ -70,21 +80,27 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Transactional(readOnly = true)
-    public RespMemberDto getMemberById(String id) {
+    public RespMemberDto getMemberById(String id) throws ShopException{
 
         Member member = memberDAO.findById(id);
+
+        if( member == null ){
+            throw new ShopException(ExceptionClass.SHOP
+            , HttpStatus.BAD_REQUEST, "Not Found Member"); 
+        }
 
         return entityToRespDto(member);
     }
 
     @Transactional
-    public void updateMember(String id, ReqMemberDto reqMemberDto) {
+    public void updateMember(String id, ReqMemberDto reqMemberDto) throws ShopException {
 
         // 사용자 정보 변경은 lock 없이 
         Member member = memberDAO.findById(id);
 
         if ( member == null ) {
-            return;
+            throw new ShopException(ExceptionClass.SHOP
+            , HttpStatus.BAD_REQUEST, "Not Found Member"); 
         }
 
         member.updateMember(reqMemberDto.getAddress(), reqMemberDto.getPhoneNumber());
@@ -98,6 +114,5 @@ public class MemberServiceImpl implements MemberService {
                         .phoneNumber(m.getPhoneNumber())
                         .build();
     }
-
 
 }

@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import com.common.seq.common.exception.ShopException;
 import com.common.seq.data.dao.shop.CategoryDAO;
 import com.common.seq.data.dao.shop.ItemDAO;
 import com.common.seq.data.dto.shop.ReqItemDto;
@@ -182,7 +183,7 @@ public class ItemServiceUnitTest {
     }
 
     @Test
-    public void updateItem_test() {
+    public void updateItem_test() throws ShopException {
         
         // given
         ReqItemDto reqItemDto = ReqItemDto.builder()
