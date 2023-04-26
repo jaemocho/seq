@@ -1,6 +1,7 @@
 package com.common.seq.service.shop;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -85,6 +86,30 @@ public class MemberServiceUnitTest {
         assertEquals("jjm", returnMember.getId());
                                             
     }
+
+    @Test // 등록하려는 member id 가 이미 등록되어있을 때 
+    public void addMemberException_test() throws ShopException {
+
+        //given 
+        ReqMemberDto reqMemberDto = ReqMemberDto.builder()
+                                            .id("jjm")
+                                            .address("수원")
+                                            .phoneNumber("010333322222")
+                                            .build();
+
+        
+        Member member = Member.builder()
+                            .id("jjm")
+                            .address("수원")
+                            .phoneNumber("010333322222")
+                            .build();
+
+        when(memberDAO.findById("jjm")).thenReturn(member);
+        when(memberDAO.save(any(Member.class))).thenReturn(member);
+
+        // when then
+        assertThrows(ShopException.class, ()->memberService.addMember(reqMemberDto));               
+    }
     
     @Test
     public void getAllMember_test(){
@@ -119,6 +144,22 @@ public class MemberServiceUnitTest {
         assertEquals(member.getId(), respMemberDto.getId());
     }
 
+    @Test // id가 없을 때 
+    public void getMemberByIdException_test() throws ShopException {
+
+        // given
+        List<Member> members = initMemberData();
+
+        Member member = members.get(0);
+
+        when(memberDAO.findById(member.getId())).thenReturn(null);
+
+
+        // when then
+        assertThrows(ShopException.class, ()->memberService.getMemberById(member.getId()));
+
+    }
+
     @Test
     public void updateMember_test() throws ShopException {
 
@@ -142,5 +183,37 @@ public class MemberServiceUnitTest {
         assertEquals("제주도", member.getAddress());
 
     }
+
+    @Test // update하려는 member id가 없을 때 
+    public void updateMemberException_test() throws ShopException {
+
+        // given
+        ReqMemberDto reqMemberDto = ReqMemberDto.builder()
+                                            .phoneNumber("01122223333")
+                                            .address("제주도")
+                                            .build();
+
+        List<Member> members = initMemberData();
+
+        Member member = members.get(0);
+
+        when(memberDAO.findById(member.getId())).thenReturn(null);
+
+        // when then
+        assertThrows(ShopException.class, ()->memberService.updateMember(member.getId(), reqMemberDto));
+
+    }
+
+    @Test // 삭제하려는  member id가 없을 때 
+    public void removeMemberException_test() throws ShopException {
+
+        // given
+        when(memberDAO.findById("memberA")).thenReturn(null);
+
+        // when then
+        assertThrows(ShopException.class, ()->memberService.removeMember("member"));
+
+    }
+
 
 }

@@ -40,14 +40,18 @@
     + exception             … custom exception handler 
   + config                  … config(cors/jpa/profile/security/swagger)
   + data                    … data
-    + dao                   … database access
-    + dto                   … layer간 data 전송 객체 
-    + entity                … database table
+    + dao                   … database access(RefreshToken, Sequence,ShortenUrl, User)
+      + shop                … shop dao
+    + dto                   … layer간 data 전송 객체(shorten/seq/user) 
+      + shop                … shop dtos
+    + entity                … database table(shorten/seq/user)
       + shop                … shop table
-    + repository            … jpa repository interface 
+    + repository            … jpa repository interface(shorten/seq/user) 
       + shop                … shop repository interface
-  + service                 … spring service layer
-  + web                     … spring controller layer
+  + service                 … spring service layer(shorten/seq/user)
+    + shop                  … shop service
+  + web                     … spring controller layer(shorten/seq/user)
+    + shop                  … shop Controller
   - SeqApplication.java     … Entry Point.
   ```
 
@@ -110,15 +114,12 @@
    ![default](image/shop_entity_diagram.PNG)
 
 
-> shop 구성 [진행 중]
+> shop 구성 
  
- - Service category/item/member/order(orderitem/order)
- - Controller  
-
  - 기본 Layered Architecture로 구성
    ![default](image/layer_arch.PNG)
 
-> 성능 테스트(API 서버의 최대 처리량을 산정)
+> 성능 테스트(API 서버의 최대 처리량을 산정) - sequence 발행 관련 
 
 ```
   사용 tool : jmeter 

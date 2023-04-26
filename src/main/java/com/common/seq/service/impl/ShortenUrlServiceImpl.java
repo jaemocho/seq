@@ -30,13 +30,12 @@ public class ShortenUrlServiceImpl implements ShortenUrlService {
 
     private ResponseEntity<RespShortenUrl> requestShortenUrl(String originUrl, String CLIENT_ID, String CLIENT_SECRET)  {
 
-        URI uri = UriComponentsBuilder
-        .fromUriString("https://openapi.naver.com")
-        .path("/v1/util/shorturl")
-        .queryParam("url", originUrl)
-        .encode()
-        .build()
-        .toUri();
+        URI uri = UriComponentsBuilder.fromUriString("https://openapi.naver.com")
+                                .path("/v1/util/shorturl")
+                                .queryParam("url", originUrl)
+                                .encode()
+                                .build()
+                                .toUri();
 
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(new MediaType[]{MediaType.APPLICATION_JSON}));

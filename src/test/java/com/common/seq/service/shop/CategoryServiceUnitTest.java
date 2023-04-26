@@ -1,6 +1,7 @@
 package com.common.seq.service.shop;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -27,6 +28,21 @@ public class CategoryServiceUnitTest {
     
     @InjectMocks
 	private CategoryServiceImpl categoryService;
+
+    private List<Category> initCategoryData() {
+        
+        Category category1 = Category.builder().id(1L).name("WOMEN").build();
+        Category category2 = Category.builder().id(2L).name("MEN").build();
+        Category category3 = Category.builder().id(3L).name("KIDS").build();
+
+        List<Category> categoryList = new ArrayList<Category>();
+        categoryList.add(category1);
+        categoryList.add(category2);
+        categoryList.add(category3);
+
+        return categoryList;
+
+    }
 
     @Test
     public void addCategory_test() throws ShopException { 
@@ -55,28 +71,10 @@ public class CategoryServiceUnitTest {
     public void getAllCategory_test() throws ShopException {
 
         //given
-        Category category1 = Category.builder()
-                                .id(1L)
-                                .name("WOMEN")
-                                .build();
-
-        Category category2 = Category.builder()
-                                .id(2L)
-                                .name("MEN")
-                                .build();
-
-        Category category3 = Category.builder()
-                                .id(3L)
-                                .name("KIDS")
-                                .build();
-
-        List<Category> categoryList = new ArrayList<Category>();
-        categoryList.add(category1);
-        categoryList.add(category2);
-        categoryList.add(category3);
-
+        List<Category> categoryList = initCategoryData();
+        
         when(categoryDAO.findAll()).thenReturn(categoryList);
-        when(categoryDAO.findById(1l)).thenReturn(category1);
+        when(categoryDAO.findById(1l)).thenReturn(categoryList.get(0));
         
         //when
         List<RespCategoryDto> respCategoryDtos = categoryService.getAllCategory();
@@ -91,24 +89,7 @@ public class CategoryServiceUnitTest {
     public void getCategoryByName_test() {
 
         //given
-        Category category1 = Category.builder()
-                                .id(1L)
-                                .name("WOMEN")
-                                .build();
-
-        Category category2 = Category.builder()
-                                .id(2L)
-                                .name("MEN")
-                                .build();
-
-        Category category3 = Category.builder()
-                                .id(3L)
-                                .name("KIDS")
-                                .build();
-        List<Category> categoryList = new ArrayList<Category>();
-        categoryList.add(category1);
-        categoryList.add(category2);
-        categoryList.add(category3);
+        List<Category> categoryList = initCategoryData();
 
         when(categoryDAO.findByName("WOMEN")).thenReturn(categoryList);
         
@@ -117,6 +98,46 @@ public class CategoryServiceUnitTest {
 
         //then 
         assertEquals(3, respCategoryDtos.size());
+    }
+
+    @Test
+    public void getCategoryById_test() throws ShopException {
+
+        //given
+        List<Category> categoryList = initCategoryData();
+
+        when(categoryDAO.findById(1L)).thenReturn(categoryList.get(0));
+        
+        //when
+        RespCategoryDto respCategoryDto = categoryService.getCategoryById(1L);
+
+        //then 
+        assertEquals("WOMEN", respCategoryDto.getName());
+    }
+
+
+    @Test // 찾는 category id 가 없을 때 
+    public void getCategoryByIdException_test() throws ShopException {
+
+        //given
+        //List<Category> categoryList = initCategoryData();
+
+        when(categoryDAO.findById(1L)).thenReturn(null);
+        
+        // when then
+        assertThrows(ShopException.class, ()-> categoryService.getCategoryById(1L));        
+    }
+
+    @Test // category 삭제 시 조회가 안될 때 
+    public void removeCategoryException_test() throws ShopException {
+
+        //given
+        // List<Category> categoryList = initCategoryData();
+
+        when(categoryDAO.findById(1L)).thenReturn(null);
+
+        // when then
+        assertThrows(ShopException.class, ()-> categoryService.removeCategory(1L));
     }
 
 

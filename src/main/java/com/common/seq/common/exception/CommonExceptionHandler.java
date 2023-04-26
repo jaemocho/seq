@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RestControllerAdvice
 @Slf4j
-public class SequenceExceptionHandler {
+public class CommonExceptionHandler {
     
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<RespErrorDto> ExceptionHandler(Exception e) {

@@ -88,7 +88,7 @@ public class ItemControllerTest {
     @Test
     public void item_test() throws Exception {
         
-        //category data insert
+        // category data insert
         // category 3개 
         // item 4개 입력 
         setInitData();

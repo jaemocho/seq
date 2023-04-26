@@ -1,6 +1,7 @@
 package com.common.seq.service.shop;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -210,6 +211,64 @@ public class ItemServiceUnitTest {
         assertEquals(200, item1.getRemainQty());
         
 
+
+    }
+
+    @Test // update시도 시 item id가 없을 때
+    public void updateItemException_test() throws ShopException {
+        
+        // given
+        Long itemId = 1L;
+
+        ReqItemDto reqItemDto = ReqItemDto.builder()
+                            .name("T-shirt")
+                            .price(400)
+                            .remainQty(200)
+                            .build();
+
+
+        when(itemDAO.findByIdForUpdate(itemId)).thenReturn(null);
+
+        // when then
+        assertThrows(ShopException.class, ()->itemService.updateItem(itemId, reqItemDto));
+    }
+
+    @Test
+    public void getItemById_test() throws ShopException {
+
+        // given
+        Item item1 = Item.builder()
+                .id(1L)
+                .name("T-shirt")
+                .price(5000)
+                .remainQty(100)
+                .build();
+
+        when(itemDAO.findById(item1.getId())).thenReturn(item1);
+
+
+        // when 
+        RespItemDto respItemDto = itemService.getItemById(item1.getId());
+
+        // then
+        assertEquals("T-shirt", respItemDto.getName());
+        assertEquals(5000, respItemDto.getPrice());
+        assertEquals(100, respItemDto.getRemainQty());
+        
+                
+    }
+
+    @Test // 찾는 item id가 없을 때 
+    public void getItemByIdException_test() throws ShopException {
+
+        // given
+        Long itemId = 1L;
+        
+        when(itemDAO.findById(itemId)).thenReturn(null);
+
+
+        // when then
+        assertThrows(ShopException.class, ()->itemService.getItemById(itemId));
 
     }
 }
