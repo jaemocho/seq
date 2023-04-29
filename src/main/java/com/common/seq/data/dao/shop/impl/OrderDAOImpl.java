@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.common.seq.data.dao.shop.OrderDAO;
 import com.common.seq.data.entity.shop.Order;
 import com.common.seq.data.repository.shop.OrderRepository;
+import com.common.seq.data.repository.shop.search.OrderSearch;
 
 import lombok.RequiredArgsConstructor;
 
@@ -51,6 +52,10 @@ public class OrderDAOImpl implements OrderDAO{
 
     public void delete(Order order) {
         orderRepository.delete(order);
+    }
+
+    public List<Order> findOrders(OrderSearch orderSearch) {
+        return orderRepository.findAll(orderSearch.toSpecification());
     }
 
 }
