@@ -4,7 +4,7 @@ import org.springframework.http.HttpStatus;
 
 import com.common.seq.common.Constants;
 
-public class ShopException extends Exception{
+public class ShopException extends RuntimeException{
 
     private static final long serialVersionUID = 4663380430591151694L;
 
