@@ -2,6 +2,7 @@ package com.common.seq.service.impl;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,6 +17,7 @@ import com.common.seq.data.dao.ShortenUrlDAO;
 import com.common.seq.data.dto.RespShortenUrlDto;
 import com.common.seq.data.dto.naver.RespShortenUrl;
 import com.common.seq.data.entity.ShortenUrl;
+import com.common.seq.data.repository.redis.ShortenUrlRedisRepository;
 import com.common.seq.service.ShortenUrlService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,8 @@ import lombok.extern.slf4j.Slf4j;
 public class ShortenUrlServiceImpl implements ShortenUrlService {
 
     private final ShortenUrlDAO shortenUrlDAO;
+
+    private final ShortenUrlRedisRepository shortenUrlRedisRepository;
 
     private ResponseEntity<RespShortenUrl> requestShortenUrl(String originUrl, String CLIENT_ID, String CLIENT_SECRET)  {
 
@@ -56,11 +60,21 @@ public class ShortenUrlServiceImpl implements ShortenUrlService {
 
     public RespShortenUrlDto genShortenUrl(String originUrl, String CLIENT_ID, String CLIENT_SECRET) {
 
+        Optional<RespShortenUrlDto> cachedRespShortenUrlDto = shortenUrlRedisRepository.findById(originUrl);
+        if ( cachedRespShortenUrlDto.isPresent()) {
+            log.info("[cache] existed originUrl : {} ", originUrl);
+            return cachedRespShortenUrlDto.get();
+        } else {
+            log.info("[cache] not existed originUrl : {} ", originUrl);
+        }
+
         ShortenUrl shortenUrl = shortenUrlDAO.findByOrgUrl(originUrl);
-        log.info("originUrl : {}" , originUrl);
         
         if (shortenUrl == null)  {
             ResponseEntity<RespShortenUrl> responseEntity = requestShortenUrl(originUrl, CLIENT_ID, CLIENT_SECRET);
+            
+            if (responseEntity == null || responseEntity.getBody() == null) return null;
+
             shortenUrl = shortenUrlDAO.save(
                 ShortenUrl.builder()
                     .orgUrl(originUrl)
@@ -69,10 +83,15 @@ public class ShortenUrlServiceImpl implements ShortenUrlService {
                     .build()
             );
         } 
-        return RespShortenUrlDto.builder()
-                    .shortenUrl(shortenUrl.getUrl())
-                    .orgUrl(shortenUrl.getOrgUrl())
-                    .build();
+
+        RespShortenUrlDto respShortenUrlDto =  RespShortenUrlDto.builder()
+                                                    .shortenUrl(shortenUrl.getUrl())
+                                                    .orgUrl(shortenUrl.getOrgUrl())
+                                                    .build();
+        // redis cache 저장
+        shortenUrlRedisRepository.save(respShortenUrlDto);
+
+        return respShortenUrlDto;
     }
 
 }

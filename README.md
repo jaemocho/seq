@@ -16,6 +16,7 @@
     [db]
     spring-boot-starter-data-jpa
     com.h2database
+    spring-boot-starter-data-redis
 
     [test]
     spring-boot-starter-test
@@ -99,14 +100,21 @@
 
 > shortenUrl (naver api)
   
-  - 내용 작성 필요
+  - RestTemplate Sample code 작성을 목적으로 
   - /api/v1/shorten-url/ 
+    ![default](image/shortenUrl.PNG)
+  
+  
 
-> sequence & unique id 발행
+> sequence
   
   - 내용 작성 필요
   - /api/v1/seq/sequence
+  
+> unique id 발행
+  
   - /api/v1/seq/guid
+    ![default](image/guid.PNG)
 
 > shop entity 
  - Diagram
