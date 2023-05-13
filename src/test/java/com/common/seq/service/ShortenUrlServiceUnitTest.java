@@ -4,6 +4,8 @@ package com.common.seq.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,6 +16,7 @@ import com.common.seq.common.exception.SequenceException;
 import com.common.seq.data.dao.ShortenUrlDAO;
 import com.common.seq.data.dto.RespShortenUrlDto;
 import com.common.seq.data.entity.ShortenUrl;
+import com.common.seq.data.repository.redis.ShortenUrlRedisRepository;
 import com.common.seq.service.impl.ShortenUrlServiceImpl;
 
 
@@ -26,6 +29,9 @@ import com.common.seq.service.impl.ShortenUrlServiceImpl;
 @ExtendWith(SpringExtension.class)
 public class ShortenUrlServiceUnitTest {
     
+    @Mock
+    private ShortenUrlRedisRepository shortenUrlRedisRepository;
+
     @Mock
     private ShortenUrlDAO shortenUrlDAO;
 
@@ -43,8 +49,11 @@ public class ShortenUrlServiceUnitTest {
                                     .orgUrl("www.naver.com")
                                     .build();
 
+        Optional<RespShortenUrlDto> respShortenUrlDto = Optional.ofNullable(null);
+
         when(shortenUrlDAO.findByOrgUrl(originUrl)).thenReturn(shortenUrl);
-        
+        when(shortenUrlRedisRepository.findById(originUrl)).thenReturn(respShortenUrlDto);
+
         RespShortenUrlDto responseEntity
                     = shortenUrlService.genShortenUrl(originUrl, "CLIENT_ID", "CLIENT_SECRET");
     

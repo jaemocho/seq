@@ -26,13 +26,8 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public Member addMember(ReqMemberDto reqMemberDto) throws ShopException {
 
-        Member member = memberDAO.findById(reqMemberDto.getId());
+        vaildateDuplicateMember(reqMemberDto.getId());
 
-        if( member != null) {
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "already exist memeber"); 
-        }
-        
         Member newMember = Member.builder()
                             .id(reqMemberDto.getId()) 
                             .address(reqMemberDto.getAddress())
@@ -45,12 +40,8 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public void removeMember(String id) throws ShopException{
 
-        Member member = memberDAO.findById(id);
-
-        if( member == null ){
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "Not Found Member"); 
-        }
+        Member member = getMember(id);
+        memberNullCheck(member);
 
         // member가 가지고 있는 order list 확인
         // order list가 있는 경우 orderitem을 확인 한 후 삭제
@@ -67,9 +58,48 @@ public class MemberServiceImpl implements MemberService {
 
     @Transactional(readOnly = true)
     public List<RespMemberDto> getAllMember() {
+        return entityToRespDto(memberDAO.findAll());
+    }
 
-        List<Member> members = memberDAO.findAll();
+    @Transactional(readOnly = true)
+    public RespMemberDto getMemberById(String id) throws ShopException{
+        Member member = getMember(id);
+        memberNullCheck(member);
+        return entityToRespDto(member);
+    }
 
+    @Transactional
+    public void updateMember(String id, ReqMemberDto reqMemberDto) throws ShopException {
+        Member member = getMember(id);
+        memberNullCheck(member);
+        member.updateMember(reqMemberDto.getAddress(), reqMemberDto.getPhoneNumber());
+    }
+
+    public Member getMember(String memberId) {
+        Member member = memberDAO.findById(memberId);
+        return member;
+    }
+
+    public void memberNullCheck(Member member) {
+        if ( member == null ) {
+            throw new ShopException(ExceptionClass.SHOP
+            , HttpStatus.BAD_REQUEST, "Not Found Member"); 
+        }
+    }
+
+
+    private void vaildateDuplicateMember(String memberId) {
+        
+        Member member = memberDAO.findById(memberId);
+
+        if( member != null) {
+            throw new ShopException(ExceptionClass.SHOP
+            , HttpStatus.BAD_REQUEST, "already exist memeber"); 
+        }
+    }
+
+    private List<RespMemberDto> entityToRespDto(List<Member> members) {
+        
         List<RespMemberDto> respMemberDtos = new ArrayList<RespMemberDto>();
 
         for(Member m : members) {
@@ -77,34 +107,6 @@ public class MemberServiceImpl implements MemberService {
         }
 
         return respMemberDtos;
-    }
-
-    @Transactional(readOnly = true)
-    public RespMemberDto getMemberById(String id) throws ShopException{
-
-        Member member = memberDAO.findById(id);
-
-        if( member == null ){
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "Not Found Member"); 
-        }
-
-        return entityToRespDto(member);
-    }
-
-    @Transactional
-    public void updateMember(String id, ReqMemberDto reqMemberDto) throws ShopException {
-
-        // 사용자 정보 변경은 lock 없이 
-        Member member = memberDAO.findById(id);
-
-        if ( member == null ) {
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "Not Found Member"); 
-        }
-
-        member.updateMember(reqMemberDto.getAddress(), reqMemberDto.getPhoneNumber());
-
     }
 
     private RespMemberDto entityToRespDto(Member m) {

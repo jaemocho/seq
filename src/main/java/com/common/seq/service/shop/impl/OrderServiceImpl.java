@@ -11,8 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.common.seq.common.Constants.ExceptionClass;
 import com.common.seq.common.ShopConstants.OrderState;
 import com.common.seq.common.exception.ShopException;
-import com.common.seq.data.dao.shop.ItemDAO;
-import com.common.seq.data.dao.shop.MemberDAO;
 import com.common.seq.data.dao.shop.OrderDAO;
 import com.common.seq.data.dao.shop.OrderItemDAO;
 import com.common.seq.data.dto.shop.ReqOrderDto;
@@ -21,6 +19,8 @@ import com.common.seq.data.entity.shop.Item;
 import com.common.seq.data.entity.shop.Member;
 import com.common.seq.data.entity.shop.Order;
 import com.common.seq.data.entity.shop.OrderItem;
+import com.common.seq.service.shop.ItemService;
+import com.common.seq.service.shop.MemberService;
 import com.common.seq.service.shop.OrderService;
 
 import lombok.RequiredArgsConstructor;
@@ -33,20 +33,17 @@ public class OrderServiceImpl implements OrderService  {
 
     private final OrderItemDAO orderItemDAO;
 
-    private final ItemDAO itemDAO;
+    private final MemberService memberService;
 
-    private final MemberDAO memberDAO;
+    private final ItemService itemService;
+
 
     @Transactional
     public Long createOrder(ReqOrderDto reqOrderDto) throws ShopException {
         
         // 주문자 확인 
-        Member orderMember = memberDAO.findById(reqOrderDto.getMemberId());
-
-        if (orderMember == null) {
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "Not Found Member");
-        }
+        Member orderMember = memberService.getMember(reqOrderDto.getMemberId());
+        memberService.memberNullCheck(orderMember);
 
         // 주문 생성 
         Order order = Order.builder()
@@ -56,65 +53,117 @@ public class OrderServiceImpl implements OrderService  {
         order.setMember(orderMember);                            
         order = orderDAO.save(order);
 
-        Item item = null;
-        OrderItem orderItem = null;
-
         // 주문 item, 수량 확인 후 orderItem 생성 
-        for( ReqOrderDto.RequestItem requestItem : reqOrderDto.getRequestItem() ) {
-
-            // item 수량은 공유자 원이기 때문에 for update 
-            item = itemDAO.findByIdForUpdate(requestItem.getItemId());
-
-            if ( item == null ) {
-                throw new ShopException(ExceptionClass.SHOP
-                , HttpStatus.BAD_REQUEST, "Not Found Item");
-            }
-            
-            // 요청 수량 반영
-            item.removeRemainQty(requestItem.getRequestQty());
-            
-            if (item != null) {
-
-                orderItem = OrderItem.builder()
-                            .item(item)
-                            .count(requestItem.getRequestQty())
-                            .build();
-                orderItem.setOrder(order);
-
-                orderItemDAO.save(orderItem);
-            }
-        }
+        createOrderItem(reqOrderDto, order);
 
         return order.getId();
 
     }
+
 
     @Transactional(readOnly = true)
     public RespOrderDto getOrderInfoByOrderId(Long orderId) throws ShopException {
 
         // 상세 정보 필요해서 fetch join 사용 
         Order order = orderDAO.findOrderInfoByOrderId(orderId);
-
-        if (order == null ) {
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "Not Found Order");    
-        }
-
+        orderNullCheck(order);
         return entityToRespDto(order);
     }
 
     @Transactional(readOnly = true)
     public List<RespOrderDto> getOrderInfoByMemberId(String memberId) {
-
         // 상세 정보 필요해서 fetch join 사용 
-        List<Order> orders = orderDAO.findOrderInfoByMemberId(memberId);
+        return entityToRespDto(orderDAO.findOrderInfoByMemberId(memberId));
+    }
 
+
+    @Transactional
+    public void cancelOrder(Long orderId) throws ShopException {
+
+        // order 는 공유자원이 아니라 for update 없이 
+        Order order = orderDAO.findById(orderId);
+        orderNullCheck(order);
+        
+        // cancel 가능한 상태인지 확인
+        vaildateOrderStateForCancel(order);
+
+        /// 주문 상태를 cancel로 변경 
+        order.updateOrderStatus(OrderState.CANCEL);
+        
+        // order item cancel 
+        cancelOrderItem(order);
+    }
+
+
+
+    private void vaildateOrderStateForCancel(Order order) {
+        if( !OrderState.REQUEST.equals(order.getOrderState())) {
+            throw new ShopException(ExceptionClass.SHOP
+            , HttpStatus.BAD_REQUEST
+            , "REQUEST 상태일 때만 취소 가능합니다. 관리자에게 문의하세요");
+        }
+    }
+
+    @Transactional
+    public void updateOrderStatus(Long orderId, OrderState orderState) throws ShopException {
+        // order 는 공유자원이 아니라 for update 없이 
+        Order order = orderDAO.findById(orderId);
+        orderNullCheck(order);
+        order.updateOrderStatus(orderState);
+    }
+
+    
+    private void createOrderItem(ReqOrderDto reqOrderDto, Order order) {
+        Item item;
+        OrderItem orderItem;
+        for( ReqOrderDto.RequestItem requestItem : reqOrderDto.getRequestItem() ) {
+
+            // item 수량은 공유자 원이기 때문에 for update 
+            item = itemService.getItemForUpdate(requestItem.getItemId());
+            itemService.itemNullCheck(item);
+
+            // 요청 수량 반영
+            item.removeRemainQty(requestItem.getRequestQty());
+            
+            orderItem = OrderItem.builder()
+                        .item(item)
+                        .count(requestItem.getRequestQty())
+                        .build();
+            orderItem.setOrder(order);
+
+            orderItemDAO.save(orderItem);
+        }
+    }
+
+    private void cancelOrderItem(Order order) {
+        Item item; 
+        for ( OrderItem oi : order.getOrderItems()) {
+            
+            item = itemService.getItemForUpdate(oi.getItem().getId());
+            
+            // item 이 없으면 무시하고 진행 
+            if ( item == null ) continue;
+
+            // 주문했던 수량 만큼 remainQty에 추가 
+            item.addRemainQty(oi.getCount());
+
+        }
+    }
+
+
+    private void orderNullCheck(Order order) {
+        if (order == null ) {
+            throw new ShopException(ExceptionClass.SHOP
+            , HttpStatus.BAD_REQUEST, "Not Found Order");    
+        }
+    }
+
+    private List<RespOrderDto> entityToRespDto(List<Order> orders) {
         List<RespOrderDto> respOrderDtos = new ArrayList<RespOrderDto>();
 
         for( Order o : orders ) {
             respOrderDtos.add(entityToRespDto(o));
         }
-
         return respOrderDtos;
     }
 
@@ -144,55 +193,6 @@ public class OrderServiceImpl implements OrderService  {
                         .orderState(order.getOrderState())
                         .build();
                         
-    }
-
-    @Transactional
-    public void cancelOrder(Long orderId) throws ShopException {
-
-        // order 는 공유자원이 아니라 for update 없이 
-        Order order = orderDAO.findById(orderId);
-
-        if( order == null ) {
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "Not Found Order");
-        }
-
-        if( !OrderState.REQUEST.equals(order.getOrderState())) {
-            
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST
-            , "REQUEST 상태일 때만 취소 가능합니다. 관리자에게 문의하세요");
-        }
-
-        /// 주문 상태를 cancel로 변경 
-        order.updateOrderStatus(OrderState.CANCEL);
-
-        Item item; 
-        for ( OrderItem oi : order.getOrderItems()) {
-            
-            item = itemDAO.findByIdForUpdate(oi.getItem().getId());
-
-            // item 이 없으면 무시하고 진행 
-            if ( item == null ) continue;
-
-            // 주문했던 수량 만큼 remainQty에 추가 
-            item.addRemainQty(oi.getCount());
-
-        }
-
-    }
-
-    @Transactional
-    public void updateOrderStatus(Long orderId, OrderState orderState) throws ShopException {
-        // order 는 공유자원이 아니라 for update 없이 
-        Order order = orderDAO.findById(orderId);
-
-        if( order == null ) {
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "Not Found Order");
-        }
-
-        order.updateOrderStatus(orderState);
     }
     
 }

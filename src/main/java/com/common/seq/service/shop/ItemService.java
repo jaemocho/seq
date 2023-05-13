@@ -20,4 +20,10 @@ public interface ItemService {
     public RespItemDto getItemById(Long id) throws ShopException;
 
     public void updateItem(Long id, ReqItemDto reqItemDto) throws ShopException;
+
+    public Item getItem(Long id);
+
+    public Item getItemForUpdate(Long id);
+
+    public void itemNullCheck(Item item);
 }

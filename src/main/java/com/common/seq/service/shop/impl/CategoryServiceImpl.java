@@ -37,57 +37,49 @@ public class CategoryServiceImpl implements CategoryService{
 
     @Transactional
     public void removeCategory(Long id) throws ShopException{
-
-        Category category = categoryDAO.findById(id);
-        
-        if( category == null) {
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "Not Found Category"); 
-        }
-
         // item 삭제를 해야하나 ?
-
+        Category category = getCategory(id);
+        categoryNullCheck(category);
         categoryDAO.delete(category);
     }
 
     @Transactional(readOnly = true)
     public List<RespCategoryDto> getAllCategory() {
-        
-        List<Category> categorys = categoryDAO.findAll();
-
-        List<RespCategoryDto> respCategoryDtos = new ArrayList<RespCategoryDto>();
-
-        for (Category c : categorys) {
-            respCategoryDtos.add(entityToRespDto(c));
-        }
-        return respCategoryDtos;
-
+        return entityToRespDto(categoryDAO.findAll());
     }
 
     @Transactional(readOnly = true)
     public List<RespCategoryDto> getCategoryByName(String name) {
-        
-        List<Category> categorys = categoryDAO.findByName(name);
+        return entityToRespDto(categoryDAO.findByName(name));
+    }
 
+    @Transactional(readOnly = true)
+    public RespCategoryDto getCategoryById(Long id) throws ShopException {
+        Category category = getCategory(id);
+        categoryNullCheck(category);
+        return entityToRespDto(category);
+    }
+
+    private Category getCategory(Long id) {
+        Category category = categoryDAO.findById(id);
+        return category;
+    }
+
+    private void categoryNullCheck(Category category) {
+        if( category == null) {
+            throw new ShopException(ExceptionClass.SHOP
+            , HttpStatus.BAD_REQUEST, "Not Found Category"); 
+        }
+    }
+
+
+    private List<RespCategoryDto> entityToRespDto(List<Category> categorys){
         List<RespCategoryDto> respCategoryDtos = new ArrayList<RespCategoryDto>();
 
         for (Category c : categorys) {
             respCategoryDtos.add(entityToRespDto(c));
         }
         return respCategoryDtos;
-    }
-
-    @Transactional(readOnly = true)
-    public RespCategoryDto getCategoryById(Long id) throws ShopException {
-
-        Category category = categoryDAO.findById(id);
-
-        if( category == null) {
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "Not Found Category"); 
-        }
-
-        return entityToRespDto(category);
     }
 
     private RespCategoryDto entityToRespDto(Category c) {

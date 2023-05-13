@@ -3,6 +3,7 @@ package com.common.seq.service.shop;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -19,8 +20,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import com.common.seq.common.ShopConstants.OrderState;
 import com.common.seq.common.exception.ShopException;
 import com.common.seq.data.dao.shop.CategoryDAO;
-import com.common.seq.data.dao.shop.ItemDAO;
-import com.common.seq.data.dao.shop.MemberDAO;
 import com.common.seq.data.dao.shop.OrderDAO;
 import com.common.seq.data.dao.shop.OrderItemDAO;
 import com.common.seq.data.dto.shop.ReqOrderDto;
@@ -42,13 +41,13 @@ public class OrderServiceUnitTest {
     private OrderItemDAO orderItemDAO;
 
     @Mock
-    private ItemDAO itemDAO;
-
-    @Mock
-    private MemberDAO memberDAO;
-
-    @Mock
     private CategoryDAO categoryDAO;
+
+    @Mock
+    private MemberService memberService;
+
+    @Mock 
+    private ItemService itemService;
 
     @InjectMocks
     private OrderServiceImpl orderServiceImpl;
@@ -124,9 +123,9 @@ public class OrderServiceUnitTest {
                                         .requestItem(requestItems)
                                         .build();
         
-        when(memberDAO.findById(reqOrderDto.getMemberId())).thenReturn(members.get(0));
-        when(itemDAO.findByIdForUpdate(items.get(0).getId())).thenReturn(items.get(0));
-        when(itemDAO.findByIdForUpdate(items.get(1).getId())).thenReturn(items.get(1));
+        when(memberService.getMember(reqOrderDto.getMemberId())).thenReturn(members.get(0));
+        when(itemService.getItemForUpdate(items.get(0).getId())).thenReturn(items.get(0));
+        when(itemService.getItemForUpdate(items.get(1).getId())).thenReturn(items.get(1));
 
         when(orderDAO.save(any(Order.class))).thenReturn(order);
         when(orderItemDAO.save(any(OrderItem.class))).thenReturn(null);
@@ -167,8 +166,8 @@ public class OrderServiceUnitTest {
                                         .requestItem(requestItems)
                                         .build();
         
-        when(memberDAO.findById(reqOrderDto.getMemberId())).thenReturn(members.get(0));
-        when(itemDAO.findByIdForUpdate(items.get(0).getId())).thenReturn(items.get(0));
+        when(memberService.getMember(reqOrderDto.getMemberId())).thenReturn(members.get(0));
+        when(itemService.getItemForUpdate(items.get(0).getId())).thenReturn(items.get(0));
 
         when(orderDAO.save(any(Order.class))).thenReturn(order);
         when(orderItemDAO.save(any(OrderItem.class))).thenReturn(null);
@@ -201,11 +200,13 @@ public class OrderServiceUnitTest {
                                         .requestItem(requestItems)
                                         .build();
         
-        when(memberDAO.findById(reqOrderDto.getMemberId())).thenReturn(null);
-        when(itemDAO.findByIdForUpdate(items.get(0).getId())).thenReturn(items.get(0));
-
+        when(memberService.getMember(reqOrderDto.getMemberId())).thenReturn(null);
+        doThrow(ShopException.class).when(memberService).memberNullCheck(null);
+        when(itemService.getItemForUpdate(items.get(0).getId())).thenReturn(items.get(0));
+    
         when(orderDAO.save(any(Order.class))).thenReturn(order);
         when(orderItemDAO.save(any(OrderItem.class))).thenReturn(null);
+
         
 
         // when then
@@ -238,9 +239,11 @@ public class OrderServiceUnitTest {
                                         .requestItem(requestItems)
                                         .build();
         
-        when(memberDAO.findById(reqOrderDto.getMemberId())).thenReturn(members.get(0));
-        when(itemDAO.findByIdForUpdate(items.get(0).getId())).thenReturn(null);
-
+        when(memberService.getMember(reqOrderDto.getMemberId())).thenReturn(members.get(0));
+        when(itemService.getItemForUpdate(items.get(0).getId())).thenReturn(null);
+        doThrow(ShopException.class).when(itemService).itemNullCheck(null);
+        
+        
         when(orderDAO.save(any(Order.class))).thenReturn(order);
         when(orderItemDAO.save(any(OrderItem.class))).thenReturn(null);
         
@@ -334,8 +337,8 @@ public class OrderServiceUnitTest {
         order.addOrderItems(orderItem1);
         order.addOrderItems(orderItem2);
 
-        when(itemDAO.findByIdForUpdate(items.get(0).getId())).thenReturn(items.get(0));
-        when(itemDAO.findByIdForUpdate(items.get(1).getId())).thenReturn(items.get(1));
+        when(itemService.getItemForUpdate(items.get(0).getId())).thenReturn(items.get(0));
+        when(itemService.getItemForUpdate(items.get(1).getId())).thenReturn(items.get(1));
 
         when(orderDAO.findById(0L)).thenReturn(order);
         
@@ -378,8 +381,8 @@ public class OrderServiceUnitTest {
         order.addOrderItems(orderItem1);
         order.addOrderItems(orderItem2);
 
-        when(itemDAO.findByIdForUpdate(items.get(0).getId())).thenReturn(items.get(0));
-        when(itemDAO.findByIdForUpdate(items.get(1).getId())).thenReturn(items.get(1));
+        when(itemService.getItemForUpdate(items.get(0).getId())).thenReturn(items.get(0));
+        when(itemService.getItemForUpdate(items.get(1).getId())).thenReturn(items.get(1));
 
         when(orderDAO.findById(0L)).thenReturn(order);
         

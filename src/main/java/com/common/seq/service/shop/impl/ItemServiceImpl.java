@@ -49,69 +49,63 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     public void removeItem(Long id) throws ShopException {
-
-        Item item = itemDAO.findById(id);
-        
-        if( item == null) {
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "Not Found Item"); 
-        }
-
+        Item item = getItem(id);
+        itemNullCheck(item);
         itemDAO.delete(item);
     }
 
     @Transactional(readOnly = true)
     public List<RespItemDto> getAllItem() {
-        
-        List<Item> items = itemDAO.findAll();
-
-        List<RespItemDto> respItemDtos = new ArrayList<RespItemDto>();
-
-        for (Item i : items) {
-            respItemDtos.add(entityToRespDto(i));
-        }
-        return respItemDtos;
+        return entityToRespDto(itemDAO.findAll());
     }
 
     @Transactional(readOnly = true)
     public RespItemDto getItemById(Long id) throws ShopException {
-        
-        Item item = itemDAO.findById(id);
-
-        if( item == null) {
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "Not Found Item"); 
-        }
-        
+        Item item = getItem(id);
+        itemNullCheck(item);
         return entityToRespDto(item);
     }
 
 
     @Transactional(readOnly = true)
     public List<RespItemDto> getItemByCategoryId(Long id) {
-        
-        List<Item> items = itemDAO.findByCategoryId(id);
+        return entityToRespDto(itemDAO.findByCategoryId(id));
+    }
 
+    @Transactional
+    public void updateItem(Long id, ReqItemDto reqItemDto) throws ShopException{
+        Item item = getItemForUpdate(id);
+        itemNullCheck(item);
+        item.updateItem(reqItemDto.getName(), reqItemDto.getPrice(), reqItemDto.getRemainQty());
+    }
+
+    public Item getItem(Long id) {
+        Item item = itemDAO.findById(id);        
+        return item;
+    }
+
+    public Item getItemForUpdate(Long id) {
+        Item item = itemDAO.findByIdForUpdate(id);
+        return item;
+    }
+
+    public void itemNullCheck(Item item) {
+        if( item == null) {
+            throw new ShopException(ExceptionClass.SHOP
+            , HttpStatus.BAD_REQUEST, "Not Found Item"); 
+        }
+    }
+
+    private List<RespItemDto> entityToRespDto(List<Item> items){
+        
         List<RespItemDto> respItemDtos = new ArrayList<RespItemDto>();
 
         for (Item i : items) {
 
             respItemDtos.add(entityToRespDto(i));
         }
+
         return respItemDtos;
-    }
-
-    @Transactional
-    public void updateItem(Long id, ReqItemDto reqItemDto) throws ShopException{
-        
-        Item item = itemDAO.findByIdForUpdate(id);
-
-        if(item == null) {
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "Not Found Item"); 
-        }
-
-        item.updateItem(reqItemDto.getName(), reqItemDto.getPrice(), reqItemDto.getRemainQty());
     }
 
     private RespItemDto entityToRespDto(Item i) {

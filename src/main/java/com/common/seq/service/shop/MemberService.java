@@ -18,4 +18,8 @@ public interface MemberService {
     public RespMemberDto getMemberById(String id) throws ShopException;
 
     public void updateMember(String id, ReqMemberDto reqMemberDto) throws ShopException;
+
+    public Member getMember(String memberId);
+
+    public void memberNullCheck(Member member);
 }
