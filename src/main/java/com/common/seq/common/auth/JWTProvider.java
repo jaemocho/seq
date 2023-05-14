@@ -57,52 +57,66 @@ public class JWTProvider {
     
 
     // 토큰 생성
-    public String createToken(Authentication authentication, JWTType type) {
-        
-        String authorities = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
+    public String createToken(Authentication authentication, JWTType jwtType) {
+        String authorities = getAuthoritiesInAuthentication(authentication);
+        long tokenValidityInseconds = getTokenValidityInseconds(jwtType);
+        String jwt = createJWT(authorities, authentication.getName(), tokenValidityInseconds);
+        return jwt;
+    }
 
-        Date now = new Date();
+    private String getAuthoritiesInAuthentication(Authentication authentication) {
+        String authorities = authentication.getAuthorities()
+                                        .stream()
+                                        .map(GrantedAuthority::getAuthority)
+                                        .collect(Collectors.joining(","));
+        return authorities;                                        
+    }
 
+    private long getTokenValidityInseconds(JWTType jwtType) {
         long tokenValidityInseconds = 0L;
-
-        if (JWTType.ACCESS_TOKEN.getJwtType().equals(type.getJwtType())) {
+        if (JWTType.ACCESS_TOKEN.getJwtType().equals(jwtType.getJwtType())) {
             tokenValidityInseconds = accessTokenValidityInseconds;
         } else  {
             tokenValidityInseconds = refreshTokenValidityInseconds;
-        } 
-
-        return Jwts.builder()
-                .setSubject(authentication.getName())
-                .claim(AUTHORITIES_KEY, authorities)
-                .setIssuedAt(now) // 토큰 발행 시간 정보
-                .setExpiration(new Date(now.getTime() + tokenValidityInseconds)) // set Expire Time
-                .signWith(key, SignatureAlgorithm.HS256)  // 사용할 암호화 알고리즘과
-                // signature 에 들어갈 secret값 세팅
-                .compact();
+        }
+        return tokenValidityInseconds;
     }
 
+    private String createJWT(String authorities, String subject, long tokenValidityInseconds) {
+        Date now = new Date();
+        String jwt = Jwts.builder()
+                        .setSubject(subject)
+                        .claim(AUTHORITIES_KEY, authorities)
+                        .setIssuedAt(now) // 토큰 발행 시간 정보
+                        .setExpiration(new Date(now.getTime() + tokenValidityInseconds)) // set Expire Time
+                        .signWith(key, SignatureAlgorithm.HS256)  // 사용할 암호화 알고리즘과
+                        // signature 에 들어갈 secret값 세팅
+                        .compact();
+        return jwt;
+    }
+
+    // 디비를 거치지 않고 토큰에서 값을 꺼내 바로 시큐리티 유저 객체를 만들어 Authentication을 만들어 반환하기에 유저네임, 권한 외 정보는 알 수 없다.
     public Authentication getAuthentication(String token) {
+        Claims claims = createClaims(token);
+        User user = createUser(claims.getSubject());
+        return new UsernamePasswordAuthenticationToken(user, token, null);
+    }
+
+    private Claims createClaims(String token) {
         Claims claims = Jwts
                         .parserBuilder()
                         .setSigningKey(key)
                         .build()
                         .parseClaimsJws(token)
                         .getBody();
+        return claims;                        
+    }
 
-
-        // Collection<? extends GrantedAuthority> authorities =
-        // Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-        //         .map(SimpleGrantedAuthority::new)
-        //         .collect(Collectors.toList());
-
-        // 디비를 거치지 않고 토큰에서 값을 꺼내 바로 시큐리티 유저 객체를 만들어 Authentication을 만들어 반환하기에 유저네임, 권한 외 정보는 알 수 없다.
+    private User createUser(String email) {
         User user = User.builder()
-                        .email(claims.getSubject())
+                        .email(email)
                         .build();
-
-        return new UsernamePasswordAuthenticationToken(user, token, null);
+        return user;                        
     }
 
     public String validateToken(String token) {
@@ -131,21 +145,18 @@ public class JWTProvider {
 
     public Boolean vaildateAccessRefreshTokenMatch(String accessToken, String refreshToken) {
         RefreshToken refreshTokenEntity = refreshTokenDAO.getRefreshToken(refreshToken);
-        
         if ( refreshTokenEntity != null ) {
             if(refreshTokenEntity.getAccessToken().equals(accessToken) 
             && refreshTokenEntity.getRefreshToken().equals(refreshToken)) {
                 return true;
-        }
+            }
         }
         return false;
     }
 
     @Transactional
     public void updateRefreshToken(String newAccessToken, String refreshToken) {
-        
         RefreshToken refreshTokenEntity = refreshTokenDAO.getRefreshToken(refreshToken);
-        
         refreshTokenEntity.setAccessToken(newAccessToken);
     }
 }

@@ -24,15 +24,9 @@ public class CommonExceptionHandler {
     public ResponseEntity<RespErrorDto> ExceptionHandler(Exception e) {
         HttpHeaders responseHeaders = new HttpHeaders();
         HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-
         log.error("Exception {}, {}", e.getCause(), e.getMessage());  
-
-        RespErrorDto respErrorDto = RespErrorDto.builder()
-                                    .errorType(httpStatus.getReasonPhrase())
-                                    .code("400")
-                                    .message("예상치 못한 에러가 발생 하였습니다. 관리자에게 문의해 주세요")
-                                    .build();
-
+        RespErrorDto respErrorDto = createRespErroDto(httpStatus.getReasonPhrase()
+                                    , "400", "예상치 못한 에러가 발생 하였습니다. 관리자에게 문의해 주세요");                                    
         return new ResponseEntity<>(respErrorDto, responseHeaders, httpStatus);
     }
 
@@ -40,15 +34,9 @@ public class CommonExceptionHandler {
     public ResponseEntity<RespErrorDto> ExceptionHandler(AuthenticationException e) {
         HttpHeaders responseHeaders = new HttpHeaders();
         HttpStatus httpStatus = HttpStatus.UNAUTHORIZED;
-
         log.error("Exception {}, {}", e.getCause(), e.getMessage());  
-
-        RespErrorDto respErrorDto = RespErrorDto.builder()
-                                    .errorType(httpStatus.getReasonPhrase())
-                                    .code("401")
-                                    .message(e.getMessage())
-                                    .build();
-
+        RespErrorDto respErrorDto = createRespErroDto(httpStatus.getReasonPhrase()
+                                    , "401", e.getMessage());
         return new ResponseEntity<>(respErrorDto, responseHeaders, httpStatus);
     }
     
@@ -57,23 +45,10 @@ public class CommonExceptionHandler {
     public ResponseEntity<RespErrorDto> ExceptionHandler(MethodArgumentNotValidException e) {
         HttpHeaders responseHeaders = new HttpHeaders();
         HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-
-        StringBuffer sb = new StringBuffer();
-        
-        for ( FieldError fe : e.getBindingResult().getFieldErrors()) {
-            sb.append(fe.getField())
-                .append(":")
-                .append(fe.getDefaultMessage());
-        }
-
+        String message = getFieldError(e);
         log.error("Exception {}, {}", e.getCause(), e.getMessage());  
-
-        RespErrorDto respErrorDto = RespErrorDto.builder()
-                                    .errorType(httpStatus.getReasonPhrase())
-                                    .code("400")
-                                    .message(sb.toString())
-                                    .build();
-
+        RespErrorDto respErrorDto = createRespErroDto(httpStatus.getReasonPhrase()
+                                                    , "400", message);
         return new ResponseEntity<>(respErrorDto, responseHeaders, httpStatus);
     }
 
@@ -81,15 +56,9 @@ public class CommonExceptionHandler {
     public ResponseEntity<RespErrorDto> ExceptionHandler(UsernameNotFoundException e) {
         HttpHeaders responseHeaders = new HttpHeaders();
         HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-
         log.error("Exception {}, {}", e.getCause(), e.getMessage());  
-
-        RespErrorDto respErrorDto = RespErrorDto.builder()
-                                    .errorType(httpStatus.getReasonPhrase())
-                                    .code("400")
-                                    .message(e.getMessage())
-                                    .build();
-
+        RespErrorDto respErrorDto = createRespErroDto(httpStatus.getReasonPhrase()
+                                                    , "400", e.getMessage());
         return new ResponseEntity<>(respErrorDto, responseHeaders, httpStatus);
     }
 
@@ -97,46 +66,48 @@ public class CommonExceptionHandler {
     public ResponseEntity<RespErrorDto> ExceptionHandler(HttpStatusCodeException e) {
         HttpHeaders responseHeaders = new HttpHeaders();
         HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-
         log.error("Exception {}, {}", e.getCause(), e.getMessage());  
-
-        
-        RespErrorDto respErrorDto = RespErrorDto.builder()
-                                    .errorType(httpStatus.getReasonPhrase())
-                                    .code("400")
-                                    .message(e.getMessage())
-                                    .build();
-
+        RespErrorDto respErrorDto = createRespErroDto(httpStatus.getReasonPhrase()
+                                                , "400", e.getMessage());
         return new ResponseEntity<>(respErrorDto, responseHeaders, httpStatus);
     }
 
     @ExceptionHandler(value = SequenceException.class)
     public ResponseEntity<RespErrorDto> ExceptionHandler(SequenceException e) {
         HttpHeaders responseHeaders = new HttpHeaders();
-
         log.error("Exception {}, {}", e.getCause(), e.getMessage());  
-
-        RespErrorDto respErrorDto = RespErrorDto.builder()
-                                    .errorType(e.getHttpStatusType())
-                                    .code(Integer.toString(e.getHttpStatusCode()))
-                                    .message(e.getMessage())
-                                    .build();
-
+        RespErrorDto respErrorDto = createRespErroDto(e.getHttpStatusType()
+                                        , Integer.toString(e.getHttpStatusCode()), e.getMessage());
         return new ResponseEntity<>(respErrorDto, responseHeaders, e.getHttpStatus());
     }
 
     @ExceptionHandler(value = ShopException.class)
     public ResponseEntity<RespErrorDto> ExceptionHandler(ShopException e) {
         HttpHeaders responseHeaders = new HttpHeaders();
-
         log.error("Exception {}, {}", e.getCause(), e.getMessage());  
+        RespErrorDto respErrorDto = createRespErroDto(e.getHttpStatusType()
+                                        ,Integer.toString(e.getHttpStatusCode()), e.getMessage());
+        return new ResponseEntity<>(respErrorDto, responseHeaders, e.getHttpStatus());
+    }
 
+    private RespErrorDto createRespErroDto(String errorType, String code, String message){
         RespErrorDto respErrorDto = RespErrorDto.builder()
-                                    .errorType(e.getHttpStatusType())
-                                    .code(Integer.toString(e.getHttpStatusCode()))
-                                    .message(e.getMessage())
+                                    .errorType(errorType)
+                                    .code(code)
+                                    .message(message)
                                     .build();
 
-        return new ResponseEntity<>(respErrorDto, responseHeaders, e.getHttpStatus());
+        return respErrorDto;                                    
+    }
+
+    private String getFieldError(MethodArgumentNotValidException e) {
+        StringBuffer sb = new StringBuffer();
+        for ( FieldError fe : e.getBindingResult().getFieldErrors()) {
+                sb.append(fe.getField())
+                    .append(":")
+                    .append(fe.getDefaultMessage());
+        }
+
+        return sb.toString();
     }
 }

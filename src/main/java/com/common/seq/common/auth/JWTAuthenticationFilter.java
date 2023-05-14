@@ -39,6 +39,10 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
         chain.doFilter(request, response);
     }
 
+    private String resolveToken(HttpServletRequest request, String type) {
+        return request.getHeader(type);
+    }
+
     private String checkAccessToken(ServletRequest request, String accessToken, String refreshToken) {
         String result = validateToken(accessToken);
         
@@ -87,10 +91,6 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
             // db에 저장된 access token과 refresh token의 매칭이 맞지 않을 때 
             request.setAttribute("TokenVaildResult", JWTException.UNMATCHED_REFRESH_ACCESS_JWT.getJwtException());    
         }
-    }
-
-    private String resolveToken(HttpServletRequest request, String type) {
-        return request.getHeader(type);
     }
 
     private String validateToken(String token) {
