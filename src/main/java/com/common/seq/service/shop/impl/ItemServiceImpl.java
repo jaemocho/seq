@@ -29,21 +29,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     public Item addItem(ReqItemDto reqItemDto) {
-        
-        Item item = Item.builder()
-                        .name(reqItemDto.getName())
-                        .price(reqItemDto.getPrice())
-                        .remainQty(reqItemDto.getRemainQty())
-                        .build();
-
-        Category category = categoryDAO.findById(reqItemDto.getCategoryId());
-
-        if( category != null) {
-            item.setCategory(category);
-        }
-
+        Item item = createNewItem(reqItemDto);
+        setCategoryToItem(item, reqItemDto.getCategoryId());
         itemDAO.save(item);
-        
         return item;
     }
 
@@ -77,6 +65,22 @@ public class ItemServiceImpl implements ItemService {
         Item item = getItemForUpdate(id);
         itemNullCheck(item);
         item.updateItem(reqItemDto.getName(), reqItemDto.getPrice(), reqItemDto.getRemainQty());
+    }
+
+    private void setCategoryToItem(Item item, Long categoryId) {
+        Category category = categoryDAO.findById(categoryId);
+        if( category != null) {
+            item.setCategory(category);
+        }
+    }
+
+    private Item createNewItem(ReqItemDto reqItemDto) {
+        Item item = Item.builder()
+                        .name(reqItemDto.getName())
+                        .price(reqItemDto.getPrice())
+                        .remainQty(reqItemDto.getRemainQty())
+                        .build();
+        return item;                        
     }
 
     public Item getItem(Long id) {

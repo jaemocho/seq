@@ -25,15 +25,8 @@ public class MemberServiceImpl implements MemberService {
     
     @Transactional
     public Member addMember(ReqMemberDto reqMemberDto) throws ShopException {
-
         vaildateDuplicateMember(reqMemberDto.getId());
-
-        Member newMember = Member.builder()
-                            .id(reqMemberDto.getId()) 
-                            .address(reqMemberDto.getAddress())
-                            .phoneNumber(reqMemberDto.getPhoneNumber())
-                            .build();
-
+        Member newMember = createNewMember(reqMemberDto);
         return memberDAO.save(newMember);
     }
 
@@ -78,6 +71,15 @@ public class MemberServiceImpl implements MemberService {
     public Member getMember(String memberId) {
         Member member = memberDAO.findById(memberId);
         return member;
+    }
+
+    private Member createNewMember(ReqMemberDto reqMemberDto) {
+        Member newMember = Member.builder()
+                            .id(reqMemberDto.getId()) 
+                            .address(reqMemberDto.getAddress())
+                            .phoneNumber(reqMemberDto.getPhoneNumber())
+                            .build();
+        return newMember;
     }
 
     public void memberNullCheck(Member member) {

@@ -60,14 +60,10 @@ public class ShortenUrlServiceImpl implements ShortenUrlService {
 
     public RespShortenUrlDto genShortenUrl(String originUrl, String CLIENT_ID, String CLIENT_SECRET) {
 
-        Optional<RespShortenUrlDto> cachedRespShortenUrlDto = shortenUrlRedisRepository.findById(originUrl);
-        if ( cachedRespShortenUrlDto.isPresent()) {
-            log.info("[cache] existed originUrl : {} ", originUrl);
-            return cachedRespShortenUrlDto.get();
-        } else {
-            log.info("[cache] not existed originUrl : {} ", originUrl);
-        }
+        RespShortenUrlDto respShortenUrlDto = findShortenUrlInCache(originUrl);
+        if (respShortenUrlDto != null) return respShortenUrlDto;
 
+        
         ShortenUrl shortenUrl = shortenUrlDAO.findByOrgUrl(originUrl);
         
         if (shortenUrl == null)  {
@@ -84,7 +80,7 @@ public class ShortenUrlServiceImpl implements ShortenUrlService {
             );
         } 
 
-        RespShortenUrlDto respShortenUrlDto =  RespShortenUrlDto.builder()
+        respShortenUrlDto =  RespShortenUrlDto.builder()
                                                     .shortenUrl(shortenUrl.getUrl())
                                                     .orgUrl(shortenUrl.getOrgUrl())
                                                     .build();
@@ -92,6 +88,19 @@ public class ShortenUrlServiceImpl implements ShortenUrlService {
         shortenUrlRedisRepository.save(respShortenUrlDto);
 
         return respShortenUrlDto;
+    }
+
+    private RespShortenUrlDto findShortenUrlInCache(String originUrl) {
+        
+        Optional<RespShortenUrlDto> cachedRespShortenUrlDto = shortenUrlRedisRepository.findById(originUrl);
+        if ( cachedRespShortenUrlDto.isPresent()) {
+            log.info("[cache] existed originUrl : {} ", originUrl);
+            return cachedRespShortenUrlDto.get();
+        } else {
+            log.info("[cache] not existed originUrl : {} ", originUrl);
+        }
+
+        return null;
     }
 
 }

@@ -26,13 +26,8 @@ public class CategoryServiceImpl implements CategoryService{
     // category start
     @Transactional
     public void addCategory(ReqCategoryDto reqCategoryDto) {
-        
-        Category category = Category.builder()
-                            .name(reqCategoryDto.getName())
-                            .build();
-        
+        Category category = createNewCategory(reqCategoryDto);
         categoryDAO.save(category);
-
     }
 
     @Transactional
@@ -58,6 +53,13 @@ public class CategoryServiceImpl implements CategoryService{
         Category category = getCategory(id);
         categoryNullCheck(category);
         return entityToRespDto(category);
+    }
+
+    private Category createNewCategory(ReqCategoryDto reqCategoryDto){
+        Category category = Category.builder()
+                                .name(reqCategoryDto.getName())
+                                .build();
+        return category;                                
     }
 
     private Category getCategory(Long id) {

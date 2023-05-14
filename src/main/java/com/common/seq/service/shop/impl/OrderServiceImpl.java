@@ -40,24 +40,15 @@ public class OrderServiceImpl implements OrderService  {
 
     @Transactional
     public Long createOrder(ReqOrderDto reqOrderDto) throws ShopException {
-        
-        // 주문자 확인 
         Member orderMember = memberService.getMember(reqOrderDto.getMemberId());
         memberService.memberNullCheck(orderMember);
-
-        // 주문 생성 
-        Order order = Order.builder()
-                            .orderDate(new Date())
-                            .orderState(OrderState.REQUEST)
-                            .build();
-        order.setMember(orderMember);                            
+        
+        Order order = createNewOrder();
         order = orderDAO.save(order);
-
-        // 주문 item, 수량 확인 후 orderItem 생성 
-        createOrderItem(reqOrderDto, order);
-
+        order.setMember(orderMember);
+        
+        addOrderItemToOrder(reqOrderDto, order);
         return order.getId();
-
     }
 
 
@@ -79,29 +70,11 @@ public class OrderServiceImpl implements OrderService  {
 
     @Transactional
     public void cancelOrder(Long orderId) throws ShopException {
-
-        // order 는 공유자원이 아니라 for update 없이 
         Order order = orderDAO.findById(orderId);
         orderNullCheck(order);
-        
-        // cancel 가능한 상태인지 확인
         vaildateOrderStateForCancel(order);
-
-        /// 주문 상태를 cancel로 변경 
         order.updateOrderStatus(OrderState.CANCEL);
-        
-        // order item cancel 
         cancelOrderItem(order);
-    }
-
-
-
-    private void vaildateOrderStateForCancel(Order order) {
-        if( !OrderState.REQUEST.equals(order.getOrderState())) {
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST
-            , "REQUEST 상태일 때만 취소 가능합니다. 관리자에게 문의하세요");
-        }
     }
 
     @Transactional
@@ -112,41 +85,52 @@ public class OrderServiceImpl implements OrderService  {
         order.updateOrderStatus(orderState);
     }
 
-    
-    private void createOrderItem(ReqOrderDto reqOrderDto, Order order) {
-        Item item;
-        OrderItem orderItem;
-        for( ReqOrderDto.RequestItem requestItem : reqOrderDto.getRequestItem() ) {
+    private Order createNewOrder() {
+        Order order = Order.builder()
+                            .orderDate(new Date())
+                            .orderState(OrderState.REQUEST)
+                            .build();
+        return order;
+    }
 
-            // item 수량은 공유자 원이기 때문에 for update 
+
+    private void vaildateOrderStateForCancel(Order order) {
+        if( !OrderState.REQUEST.equals(order.getOrderState())) {
+            throw new ShopException(ExceptionClass.SHOP
+            , HttpStatus.BAD_REQUEST
+            , "REQUEST 상태일 때만 취소 가능합니다. 관리자에게 문의하세요");
+        }
+    }
+
+    
+    private void addOrderItemToOrder(ReqOrderDto reqOrderDto, Order order) {
+        OrderItem orderItem;
+        Item item;
+        for( ReqOrderDto.RequestItem requestItem : reqOrderDto.getRequestItem() ) {
             item = itemService.getItemForUpdate(requestItem.getItemId());
             itemService.itemNullCheck(item);
-
-            // 요청 수량 반영
             item.removeRemainQty(requestItem.getRequestQty());
-            
-            orderItem = OrderItem.builder()
-                        .item(item)
-                        .count(requestItem.getRequestQty())
-                        .build();
+            orderItem = createOrderItem(item, requestItem.getRequestQty());
             orderItem.setOrder(order);
-
             orderItemDAO.save(orderItem);
         }
     }
 
+    private OrderItem createOrderItem(Item item, int requestQty) {
+        OrderItem orderItem = OrderItem.builder()
+                                    .item(item)
+                                    .count(requestQty)
+                                    .build();
+        return orderItem;                                    
+    }
+
+
     private void cancelOrderItem(Order order) {
         Item item; 
         for ( OrderItem oi : order.getOrderItems()) {
-            
             item = itemService.getItemForUpdate(oi.getItem().getId());
-            
-            // item 이 없으면 무시하고 진행 
             if ( item == null ) continue;
-
-            // 주문했던 수량 만큼 remainQty에 추가 
             item.addRemainQty(oi.getCount());
-
         }
     }
 
