@@ -6,9 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,8 +15,7 @@ import com.common.seq.data.dto.shop.ReqCategoryDto;
 import com.common.seq.data.dto.shop.ReqItemDto;
 import com.common.seq.data.dto.shop.ReqMemberDto;
 import com.common.seq.data.dto.shop.ReqOrderDto;
-import com.common.seq.web.shop.util.ControllerTestUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.common.seq.web.shop.util.RequestAction;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -34,55 +31,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("dev")
 @Transactional
 @AutoConfigureMockMvc
-@SpringBootTest(webEnvironment = WebEnvironment.MOCK) 
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT) 
 public class OrderControllerTest {
     
     @Autowired
-    private MockMvc mockMvc;
-
-    private void setInitData() throws Exception {
-        
-        // member insert
-        List<ReqMemberDto> reqMemberDtos = new ArrayList<ReqMemberDto>();
-
-        ReqMemberDto reqMemberDto1 = ReqMemberDto.builder().id("memberA").address("서울").phoneNumber("01111111111").build();
-        ReqMemberDto reqMemberDto2 = ReqMemberDto.builder().id("memberB").address("서울").phoneNumber("01111111111").build();
-
-        reqMemberDtos.add(reqMemberDto1);
-        reqMemberDtos.add(reqMemberDto2);
-
-        
-        ControllerTestUtils.<ReqMemberDto>requestInitDataSimplePost(mockMvc, reqMemberDtos, "/api/v1/shop/member");
-
-        // category insert 
-        List<ReqCategoryDto> reqCategoryDtos = new ArrayList<ReqCategoryDto>();
-        
-        ReqCategoryDto reqCategoryDto1 = ReqCategoryDto.builder().name("WOMEN").build();
-        ReqCategoryDto reqCategoryDto2 = ReqCategoryDto.builder().name("MEN").build();
-        ReqCategoryDto reqCategoryDto3 = ReqCategoryDto.builder().name("KIDS").build();
-        
-        reqCategoryDtos.add(reqCategoryDto1);
-        reqCategoryDtos.add(reqCategoryDto2);
-        reqCategoryDtos.add(reqCategoryDto3);
-
-        ControllerTestUtils.<ReqCategoryDto>requestInitDataSimplePost(mockMvc, reqCategoryDtos, "/api/v1/shop/category");
-
-        // item insert 
-        List<ReqItemDto> reqItemDtos = new ArrayList<ReqItemDto>();
-        
-        ReqItemDto reqItemDto1 = ReqItemDto.builder().name("T-shirt").price(5000).remainQty(1000).categoryId(1L).build();
-        ReqItemDto reqItemDto2 = ReqItemDto.builder().name("Y-shirt").price(4000).remainQty(500).categoryId(1L).build();
-        ReqItemDto reqItemDto3 = ReqItemDto.builder().name("T-shirt").price(3000).remainQty(200).categoryId(2L).build();
-        ReqItemDto reqItemDto4 = ReqItemDto.builder().name("T-shirt").price(2000).remainQty(200).categoryId(3L).build();
-
-        reqItemDtos.add(reqItemDto1);
-        reqItemDtos.add(reqItemDto2);
-        reqItemDtos.add(reqItemDto3);
-        reqItemDtos.add(reqItemDto4);
-
-
-        ControllerTestUtils.<ReqItemDto>requestInitDataSimplePost(mockMvc, reqItemDtos, "/api/v1/shop/item");
-    }
+    public RequestAction requestAction;
 
     @Test
     public void order_test() throws Exception {
@@ -93,7 +46,6 @@ public class OrderControllerTest {
         setInitData() ;
 
         ResultActions resultAction;
-        String content;
         ReqOrderDto reqOrderDto;
         
         
@@ -123,13 +75,8 @@ public class OrderControllerTest {
                                 .requestItem(requestItems)
                                 .build();
                                 
-        content = new ObjectMapper().writeValueAsString(reqOrderDto);
-
-        resultAction = mockMvc.perform(post("/api/v1/shop/order")
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(content)
-                                .accept(MediaType.APPLICATION_JSON_VALUE));
-
+        resultAction = requestAction.doAction(post("/api/v1/shop/order"), reqOrderDto);
+        
         resultAction.andExpect(status().isCreated())
                     .andExpect(content().string("1"))
                     .andDo(MockMvcResultHandlers.print());
@@ -140,13 +87,8 @@ public class OrderControllerTest {
                                 // .memberId("memberA")
                                 .requestItem(requestItems)
                                 .build();
-                                
-        content = new ObjectMapper().writeValueAsString(reqOrderDto);
-
-        resultAction = mockMvc.perform(post("/api/v1/shop/order")
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(content)
-                                .accept(MediaType.APPLICATION_JSON_VALUE));
+        resultAction = requestAction.doAction(post("/api/v1/shop/order"), reqOrderDto);
+        
 
         resultAction.andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.message").value("memberId:must not be null"))
@@ -158,23 +100,17 @@ public class OrderControllerTest {
                                 .memberId("memberA")
                                 //.requestItem(requestItems)
                                 .build();
-                                
-        content = new ObjectMapper().writeValueAsString(reqOrderDto);
-
-        resultAction = mockMvc.perform(post("/api/v1/shop/order")
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(content)
-                                .accept(MediaType.APPLICATION_JSON_VALUE));
+        
+        resultAction = requestAction.doAction(post("/api/v1/shop/order"), reqOrderDto);
+        
 
         resultAction.andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.message").value("requestItem:must not be null"))
                     .andDo(MockMvcResultHandlers.print());                                           
 
         // id 1 번 조회 test
-        resultAction = mockMvc.perform(get("/api/v1/shop/order/1")
-                                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                        .accept(MediaType.APPLICATION_JSON_VALUE));
-
+        resultAction = requestAction.doAction(get("/api/v1/shop/order/1"));
+        
         resultAction.andExpect(status().isOk())
                     .andExpect(jsonPath("$.memberId").value("memberA"))
                     .andExpect(jsonPath("$.orderItemInfos[0].itemId").value(1))
@@ -195,13 +131,8 @@ public class OrderControllerTest {
                                 .memberId("memberA")
                                 .requestItem(requestItems)
                                 .build();
-                                
-        content = new ObjectMapper().writeValueAsString(reqOrderDto);
-
-        resultAction = mockMvc.perform(post("/api/v1/shop/order")
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(content)
-                                .accept(MediaType.APPLICATION_JSON_VALUE));
+        
+        resultAction = requestAction.doAction(post("/api/v1/shop/order"),reqOrderDto);
 
         resultAction.andExpect(status().isCreated())
                     .andExpect(content().string("2"))
@@ -209,9 +140,7 @@ public class OrderControllerTest {
 
 
         // memberid로 조회 테스트 
-        resultAction = mockMvc.perform(get("/api/v1/shop/order/member/memberA")
-                                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                        .accept(MediaType.APPLICATION_JSON_VALUE));
+        resultAction = requestAction.doAction(get("/api/v1/shop/order/member/memberA"));
         
         // model and view 로 해서 확인하는 법으로 교체를 ...
         resultAction.andExpect(status().isOk())
@@ -243,9 +172,7 @@ public class OrderControllerTest {
                     .andDo(MockMvcResultHandlers.print());
 
         // 주문 취소 테스트 (1번 주문)
-        resultAction = mockMvc.perform(delete("/api/v1/shop/order/1")
-                                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                        .accept(MediaType.APPLICATION_JSON_VALUE));
+        resultAction = requestAction.doAction(delete("/api/v1/shop/order/1"));
 
         resultAction.andExpect(status().isOk())
                     .andExpect(content().string("SUCCESS"))
@@ -253,14 +180,78 @@ public class OrderControllerTest {
                     
         
         // id 1 번 조회 test (주문 취소 후 상태 변경 확인)
-        resultAction = mockMvc.perform(get("/api/v1/shop/order/1")
-                                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                        .accept(MediaType.APPLICATION_JSON_VALUE));
+        resultAction = requestAction.doAction(get("/api/v1/shop/order/1"));
 
         resultAction.andExpect(status().isOk())
                     .andExpect(jsonPath("$.memberId").value("memberA"))
                     .andExpect(jsonPath("$.orderState").value("CANCEL"))
                     .andDo(MockMvcResultHandlers.print());
         
+    }
+
+    private void setInitData() throws Exception {
+        
+        // member insert
+        List<ReqMemberDto> reqMemberDtos = createTestReqMemberDto();
+        for(ReqMemberDto reqMemberDto : reqMemberDtos) {
+            requestAction.doAction(post("/api/v1/shop/member"), reqMemberDto);
+        }
+
+        // category insert 
+        List<ReqCategoryDto> reqCategoryDtos = createTestReqCategoryDtos();
+        for(ReqCategoryDto reqCategoryDto : reqCategoryDtos) {
+            requestAction.doAction(post("/api/v1/shop/category"), reqCategoryDto);
+       }
+
+        // item insert 
+        List<ReqItemDto> reqItemDtos = createTestReqItemDtos();
+        for(ReqItemDto reqItemDto : reqItemDtos) {
+            requestAction.doAction(post("/api/v1/shop/item"), reqItemDto);
+       }
+    }
+
+    private List<ReqMemberDto> createTestReqMemberDto() {
+        List<ReqMemberDto> reqMemberDtos = new ArrayList<ReqMemberDto>();
+
+        ReqMemberDto reqMemberDto1 = ReqMemberDto.builder().id("memberA").address("서울").phoneNumber("01111111111").build();
+        ReqMemberDto reqMemberDto2 = ReqMemberDto.builder().id("memberB").address("서울").phoneNumber("01111111111").build();
+
+        reqMemberDtos.add(reqMemberDto1);
+        reqMemberDtos.add(reqMemberDto2);
+
+        return reqMemberDtos;
+        
+    }
+
+    private List<ReqCategoryDto> createTestReqCategoryDtos() {
+        List<ReqCategoryDto> reqCategoryDtos = new ArrayList<ReqCategoryDto>();
+        
+        ReqCategoryDto reqCategoryDto1 = ReqCategoryDto.builder().name("WOMEN").build();
+        ReqCategoryDto reqCategoryDto2 = ReqCategoryDto.builder().name("MEN").build();
+        ReqCategoryDto reqCategoryDto3 = ReqCategoryDto.builder().name("KIDS").build();
+        
+        reqCategoryDtos.add(reqCategoryDto1);
+        reqCategoryDtos.add(reqCategoryDto2);
+        reqCategoryDtos.add(reqCategoryDto3);
+
+
+        return reqCategoryDtos;
+    }
+
+    private List<ReqItemDto> createTestReqItemDtos() {
+        List<ReqItemDto> reqItemDtos = new ArrayList<ReqItemDto>();
+        
+        ReqItemDto reqItemDto1 = ReqItemDto.builder().name("T-shirt").price(5000).remainQty(1000).categoryId(1L).build();
+        ReqItemDto reqItemDto2 = ReqItemDto.builder().name("Y-shirt").price(4000).remainQty(500).categoryId(1L).build();
+        ReqItemDto reqItemDto3 = ReqItemDto.builder().name("T-shirt").price(3000).remainQty(200).categoryId(2L).build();
+        ReqItemDto reqItemDto4 = ReqItemDto.builder().name("T-shirt").price(2000).remainQty(200).categoryId(3L).build();
+
+        reqItemDtos.add(reqItemDto1);
+        reqItemDtos.add(reqItemDto2);
+        reqItemDtos.add(reqItemDto3);
+        reqItemDtos.add(reqItemDto4);
+
+
+        return reqItemDtos;
     }
 }

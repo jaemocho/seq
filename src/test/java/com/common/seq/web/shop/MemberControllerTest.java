@@ -17,24 +17,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.common.seq.data.dto.shop.ReqMemberDto;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.common.seq.web.shop.util.RequestAction;
 
 @ActiveProfiles("dev")
 @Transactional
 @AutoConfigureMockMvc
-@SpringBootTest(webEnvironment = WebEnvironment.MOCK) 
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT) 
 public class MemberControllerTest {
     
     @Autowired
-	private MockMvc mockMvc;
+    public RequestAction requestAction;
 
     @Test
     public void join_test() throws Exception{
@@ -46,12 +44,7 @@ public class MemberControllerTest {
                                             .phoneNumber("01111111111")
                                             .build();
 
-        String content = new ObjectMapper().writeValueAsString(reqMemberDto);
-
-        ResultActions resultAction = mockMvc.perform(post("/api/v1/shop/member")
-                                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                        .content(content)
-                                        .accept(MediaType.APPLICATION_JSON_VALUE));
+        ResultActions resultAction = requestAction.doAction(post("/api/v1/shop/member"), reqMemberDto);
 
         resultAction.andExpect(status().isCreated())
                     .andExpect(content().string("SUCCESS"))
@@ -64,13 +57,8 @@ public class MemberControllerTest {
                         .phoneNumber("01111111111")
                         .build();
 
-        content = new ObjectMapper().writeValueAsString(reqMemberDto);
-
-        resultAction = mockMvc.perform(post("/api/v1/shop/member")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(content)
-                        .accept(MediaType.APPLICATION_JSON_VALUE));
-
+        resultAction = requestAction.doAction(post("/api/v1/shop/member"), reqMemberDto);
+        
         resultAction.andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.message").value("id:must not be null"))
                     .andDo(MockMvcResultHandlers.print());
@@ -83,37 +71,15 @@ public class MemberControllerTest {
                         .phoneNumber("01111111111")
                         .build();
 
-        content = new ObjectMapper().writeValueAsString(reqMemberDto);
-
-        resultAction = mockMvc.perform(post("/api/v1/shop/member")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(content)
-                        .accept(MediaType.APPLICATION_JSON_VALUE));
-
+        resultAction = requestAction.doAction(post("/api/v1/shop/member"), reqMemberDto);
+        
         resultAction.andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.message").value("address:must not be null"))
                     .andDo(MockMvcResultHandlers.print());
             
     }
 
-    private void setMemberList() throws Exception{
-        
-        List<ReqMemberDto> reqMemberDtos = new ArrayList<ReqMemberDto>();
-        reqMemberDtos.add(ReqMemberDto.builder().id("member1").address("한국").phoneNumber("01111111111").build());
-        reqMemberDtos.add(ReqMemberDto.builder().id("member2").address("한국").phoneNumber("01111111111").build());
-        reqMemberDtos.add(ReqMemberDto.builder().id("member3").address("한국").phoneNumber("01111111111").build());
-        
-        
-        for(ReqMemberDto reqMemberDto : reqMemberDtos) {
-            String content = new ObjectMapper().writeValueAsString(reqMemberDto);
 
-            mockMvc.perform(post("/api/v1/shop/member")
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(content)
-                .accept(MediaType.APPLICATION_JSON_VALUE));
-        }
-        
-    }
 
     @Test
     public void get_test() throws Exception{
@@ -122,10 +88,8 @@ public class MemberControllerTest {
         setMemberList();
 
         // member id 조회 테스트
-        ResultActions resultAction = mockMvc.perform(get("/api/v1/shop/member/member1")
-                                            .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                            .accept(MediaType.APPLICATION_JSON_VALUE));
-
+        ResultActions resultAction = requestAction.doAction(get("/api/v1/shop/member/member1"));
+        
         resultAction.andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value("member1"))
                     .andExpect(jsonPath("$.address").value("한국"))
@@ -134,10 +98,7 @@ public class MemberControllerTest {
 
 
         // 전체 member 조회 테스트 
-        resultAction = mockMvc.perform(get("/api/v1/shop/members")
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .accept(MediaType.APPLICATION_JSON_VALUE));
-
+        resultAction = requestAction.doAction(get("/api/v1/shop/members"));
 
         resultAction.andExpect(status().isOk())
                     .andExpect(jsonPath("$[0].id").value("member1"))
@@ -153,9 +114,7 @@ public class MemberControllerTest {
         setMemberList();
 
         // member id 삭제 테스트
-        ResultActions resultAction = mockMvc.perform(delete("/api/v1/shop/member/member1")
-                                            .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                            .accept(MediaType.APPLICATION_JSON_VALUE));
+        ResultActions resultAction = requestAction.doAction(delete("/api/v1/shop/member/member1"));
 
         resultAction.andExpect(status().isOk())
                     .andExpect(content().string("SUCCESS"))
@@ -163,9 +122,7 @@ public class MemberControllerTest {
 
 
         // 삭제 후 전체 member 조회 테스트 
-        resultAction = mockMvc.perform(get("/api/v1/shop/members")
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .accept(MediaType.APPLICATION_JSON_VALUE));
+        resultAction = requestAction.doAction(get("/api/v1/shop/members"));
 
 
         resultAction.andExpect(status().isOk())
@@ -180,13 +137,8 @@ public class MemberControllerTest {
                                             .phoneNumber("0222222222")
                                             .build();
 
-        String content = new ObjectMapper().writeValueAsString(reqMemberDto);
-
-        resultAction = mockMvc.perform(put("/api/v1/shop/member/member2")
-                                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                .content(content)
-                                .accept(MediaType.APPLICATION_JSON_VALUE));
-
+        resultAction = requestAction.doAction(put("/api/v1/shop/member/member2"), reqMemberDto);
+        
 
         resultAction.andExpect(status().isOk())
                     .andExpect(content().string("SUCCESS"))
@@ -194,15 +146,34 @@ public class MemberControllerTest {
 
         
         // update 후 조회
-        resultAction = mockMvc.perform(get("/api/v1/shop/member/member2")
-                                            .contentType(MediaType.APPLICATION_JSON_VALUE)
-                                            .accept(MediaType.APPLICATION_JSON_VALUE));
-
+        resultAction = requestAction.doAction(get("/api/v1/shop/member/member2"));
+        
         resultAction.andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value("member2"))
                     .andExpect(jsonPath("$.address").value("미국"))
                     .andExpect(jsonPath("$.phoneNumber").value("0222222222"))
                     .andDo(MockMvcResultHandlers.print());
+    }
+
+    private void setMemberList() throws Exception{
+        
+        List<ReqMemberDto> reqMemberDtos = createTestReqMemberDto();
+        
+        for(ReqMemberDto reqMemberDto : reqMemberDtos) {
+            requestAction.doAction(post("/api/v1/shop/member"), reqMemberDto);
+        }
+        
+    }
+
+    private List<ReqMemberDto> createTestReqMemberDto() {
+        List<ReqMemberDto> reqMemberDtos = new ArrayList<ReqMemberDto>();
+        
+        reqMemberDtos.add(ReqMemberDto.builder().id("member1").address("한국").phoneNumber("01111111111").build());
+        reqMemberDtos.add(ReqMemberDto.builder().id("member2").address("한국").phoneNumber("01111111111").build());
+        reqMemberDtos.add(ReqMemberDto.builder().id("member3").address("한국").phoneNumber("01111111111").build());
+
+        return reqMemberDtos;
+        
     }
 
     

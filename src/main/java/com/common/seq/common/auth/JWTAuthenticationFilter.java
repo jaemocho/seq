@@ -31,12 +31,19 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
         String refreshToken = resolveToken((HttpServletRequest)request, REFRESH_TOKEN_HEADER);
         String result = checkAccessToken(request, accessToken, refreshToken);
         
-        if (JWTException.EXPIRED_JWT.getJwtException().equals(result)) {
+        if (isTokenExpired(result)) {
             checkRefreshToken(request, accessToken, refreshToken);
         } else {
             request.setAttribute("TokenVaildResult", result);
         }
         chain.doFilter(request, response);
+    }
+
+    private boolean isTokenExpired(String result) {
+        if (JWTException.EXPIRED_JWT.getJwtException().equals(result)) {
+            return true;
+        }
+        return false;
     }
 
     private String resolveToken(HttpServletRequest request, String type) {
@@ -46,7 +53,7 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
     private String checkAccessToken(ServletRequest request, String accessToken, String refreshToken) {
         String result = validateToken(accessToken);
         
-        if ("SUCCESS".equals(result)) {
+        if (isSuccess(result)) {
             // 토큰에 이상이 없으면 
             // UsernamePasswordAuthenticationToken 을 생성해서 SecurityContextHolder 에 등록 
             // UsernamePasswordAuthenticationToken AbstractAuthenticationToken 상속 받고 Authentication 구현 
@@ -63,17 +70,24 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
             
         String result = validateToken(refreshToken);
 
-        if ("SUCCESS".equals(result)) {
+        if (isSuccess(result)) {
             vaildateAccessRefreshTokenMatch(request, accessToken, refreshToken);
         } else {
             request.setAttribute("TokenVaildResult", "[Refresh] " + result);    
         }
     }
 
+    private boolean isSuccess(String result) {
+        if ("SUCCESS".equals(result)){
+            return true;
+        }
+        return false;
+    }
+
     private void vaildateAccessRefreshTokenMatch(ServletRequest request, String accessToken, String refreshToken) {
         // access token과 refresh token이 db에 저장되어있는 값과 같으면  
         // refreshtoken의 정보로 accesstoken 재발급 
-        if (jwtProvider.vaildateAccessRefreshTokenMatch(accessToken, refreshToken) ) {
+        if (isAccessRefreshTokenMached(accessToken, refreshToken)) {
 
             // refresh token의 username, role을 authentication 형태로 가져온다
             Authentication authentication = jwtProvider.getAuthentication(refreshToken);
@@ -91,6 +105,10 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
             // db에 저장된 access token과 refresh token의 매칭이 맞지 않을 때 
             request.setAttribute("TokenVaildResult", JWTException.UNMATCHED_REFRESH_ACCESS_JWT.getJwtException());    
         }
+    }
+
+    private boolean isAccessRefreshTokenMached(String accessToken, String refreshToken) {
+        return jwtProvider.vaildateAccessRefreshTokenMatch(accessToken, refreshToken);
     }
 
     private String validateToken(String token) {

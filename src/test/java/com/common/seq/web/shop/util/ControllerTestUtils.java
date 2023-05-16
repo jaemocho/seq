@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,7 +16,7 @@ public class ControllerTestUtils {
         String content ;
 
         for(T t : list) {
-            content = new ObjectMapper().writeValueAsString(t);
+            content = makeContentByObjectMapper(t);
 
             mockMvc.perform(post(url)
                     .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -23,4 +24,9 @@ public class ControllerTestUtils {
                     .accept(MediaType.APPLICATION_JSON_VALUE));
         }
     }
+
+    private static String makeContentByObjectMapper(Object object) throws Exception{
+        return new ObjectMapper().writeValueAsString(object);
+    }
+    
 }
