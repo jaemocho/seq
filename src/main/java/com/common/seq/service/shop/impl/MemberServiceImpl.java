@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.common.seq.common.CommonUtils;
 import com.common.seq.common.Constants.ExceptionClass;
 import com.common.seq.common.exception.ShopException;
 import com.common.seq.data.dao.shop.MemberDAO;
@@ -34,7 +35,7 @@ public class MemberServiceImpl implements MemberService {
     public void removeMember(String id) throws ShopException{
 
         Member member = getMember(id);
-        memberNullCheck(member);
+        CommonUtils.nullCheckAndThrowException(member, Member.class.getName());
 
         // member가 가지고 있는 order list 확인
         // order list가 있는 경우 orderitem을 확인 한 후 삭제
@@ -57,17 +58,18 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(readOnly = true)
     public RespMemberDto getMemberById(String id) throws ShopException{
         Member member = getMember(id);
-        memberNullCheck(member);
+        CommonUtils.nullCheckAndThrowException(member, Member.class.getName());
         return entityToRespDto(member);
     }
 
     @Transactional
     public void updateMember(String id, ReqMemberDto reqMemberDto) throws ShopException {
         Member member = getMember(id);
-        memberNullCheck(member);
+        CommonUtils.nullCheckAndThrowException(member, Member.class.getName());
         member.updateMember(reqMemberDto.getAddress(), reqMemberDto.getPhoneNumber());
     }
 
+    @Transactional(readOnly = true)
     public Member getMember(String memberId) {
         Member member = memberDAO.findById(memberId);
         return member;
@@ -81,14 +83,6 @@ public class MemberServiceImpl implements MemberService {
                             .build();
         return newMember;
     }
-
-    public void memberNullCheck(Member member) {
-        if ( member == null ) {
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "Not Found Member"); 
-        }
-    }
-
 
     private void vaildateDuplicateMember(String memberId) {
         

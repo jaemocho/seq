@@ -3,11 +3,10 @@ package com.common.seq.service.shop.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.common.seq.common.Constants.ExceptionClass;
+import com.common.seq.common.CommonUtils;
 import com.common.seq.common.exception.ShopException;
 import com.common.seq.data.dao.shop.CategoryDAO;
 import com.common.seq.data.dao.shop.ItemDAO;
@@ -38,7 +37,7 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public void removeItem(Long id) throws ShopException {
         Item item = getItem(id);
-        itemNullCheck(item);
+        CommonUtils.nullCheckAndThrowException(item, Item.class.getName());
         itemDAO.delete(item);
     }
 
@@ -50,7 +49,7 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(readOnly = true)
     public RespItemDto getItemById(Long id) throws ShopException {
         Item item = getItem(id);
-        itemNullCheck(item);
+        CommonUtils.nullCheckAndThrowException(item, Item.class.getName());
         return entityToRespDto(item);
     }
 
@@ -63,7 +62,7 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public void updateItem(Long id, ReqItemDto reqItemDto) throws ShopException{
         Item item = getItemForUpdate(id);
-        itemNullCheck(item);
+        CommonUtils.nullCheckAndThrowException(item, Item.class.getName());
         item.updateItem(reqItemDto.getName(), reqItemDto.getPrice(), reqItemDto.getRemainQty());
     }
 
@@ -91,13 +90,6 @@ public class ItemServiceImpl implements ItemService {
     public Item getItemForUpdate(Long id) {
         Item item = itemDAO.findByIdForUpdate(id);
         return item;
-    }
-
-    public void itemNullCheck(Item item) {
-        if( item == null) {
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "Not Found Item"); 
-        }
     }
 
     private List<RespItemDto> entityToRespDto(List<Item> items){

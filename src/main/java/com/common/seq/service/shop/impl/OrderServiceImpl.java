@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.common.seq.common.CommonUtils;
 import com.common.seq.common.Constants.ExceptionClass;
 import com.common.seq.common.ShopConstants.OrderState;
 import com.common.seq.common.exception.ShopException;
@@ -41,7 +42,7 @@ public class OrderServiceImpl implements OrderService  {
     @Transactional
     public Long createOrder(ReqOrderDto reqOrderDto) throws ShopException {
         Member orderMember = memberService.getMember(reqOrderDto.getMemberId());
-        memberService.memberNullCheck(orderMember);
+        CommonUtils.nullCheckAndThrowException(orderMember, Member.class.getName());
         
         Order order = createNewOrder();
         order = orderDAO.save(order);
@@ -57,7 +58,7 @@ public class OrderServiceImpl implements OrderService  {
 
         // 상세 정보 필요해서 fetch join 사용 
         Order order = orderDAO.findOrderInfoByOrderId(orderId);
-        orderNullCheck(order);
+        CommonUtils.nullCheckAndThrowException(order, Order.class.getName());
         return entityToRespDto(order);
     }
 
@@ -71,7 +72,7 @@ public class OrderServiceImpl implements OrderService  {
     @Transactional
     public void cancelOrder(Long orderId) throws ShopException {
         Order order = orderDAO.findById(orderId);
-        orderNullCheck(order);
+        CommonUtils.nullCheckAndThrowException(order, Order.class.getName());
         vaildateOrderStateForCancel(order);
         order.updateOrderStatus(OrderState.CANCEL);
         cancelOrderItem(order);
@@ -81,7 +82,7 @@ public class OrderServiceImpl implements OrderService  {
     public void updateOrderStatus(Long orderId, OrderState orderState) throws ShopException {
         // order 는 공유자원이 아니라 for update 없이 
         Order order = orderDAO.findById(orderId);
-        orderNullCheck(order);
+        CommonUtils.nullCheckAndThrowException(order, Order.class.getName());
         order.updateOrderStatus(orderState);
     }
 
@@ -108,7 +109,7 @@ public class OrderServiceImpl implements OrderService  {
         Item item;
         for( ReqOrderDto.RequestItem requestItem : reqOrderDto.getRequestItem() ) {
             item = itemService.getItemForUpdate(requestItem.getItemId());
-            itemService.itemNullCheck(item);
+            CommonUtils.nullCheckAndThrowException(item, Item.class.getName());
             item.removeRemainQty(requestItem.getRequestQty());
             orderItem = createOrderItem(item, requestItem.getRequestQty());
             orderItem.setOrder(order);
@@ -131,14 +132,6 @@ public class OrderServiceImpl implements OrderService  {
             item = itemService.getItemForUpdate(oi.getItem().getId());
             if ( item == null ) continue;
             item.addRemainQty(oi.getCount());
-        }
-    }
-
-
-    private void orderNullCheck(Order order) {
-        if (order == null ) {
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "Not Found Order");    
         }
     }
 

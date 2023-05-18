@@ -3,7 +3,6 @@ package com.common.seq.service.shop;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -48,6 +47,7 @@ public class OrderServiceUnitTest {
 
     @Mock 
     private ItemService itemService;
+
 
     @InjectMocks
     private OrderServiceImpl orderServiceImpl;
@@ -200,8 +200,7 @@ public class OrderServiceUnitTest {
                                         .requestItem(requestItems)
                                         .build();
         
-        when(memberService.getMember(reqOrderDto.getMemberId())).thenReturn(null);
-        doThrow(ShopException.class).when(memberService).memberNullCheck(null);
+        when(memberService.getMember(reqOrderDto.getMemberId())).thenReturn(null);        
         when(itemService.getItemForUpdate(items.get(0).getId())).thenReturn(items.get(0));
     
         when(orderDAO.save(any(Order.class))).thenReturn(order);
@@ -241,8 +240,7 @@ public class OrderServiceUnitTest {
         
         when(memberService.getMember(reqOrderDto.getMemberId())).thenReturn(members.get(0));
         when(itemService.getItemForUpdate(items.get(0).getId())).thenReturn(null);
-        doThrow(ShopException.class).when(itemService).itemNullCheck(null);
-        
+        // doThrow(ShopException.class).when(commonUtils).nullCheckAndThrowException(null, Item.class.getName());
         
         when(orderDAO.save(any(Order.class))).thenReturn(order);
         when(orderItemDAO.save(any(OrderItem.class))).thenReturn(null);

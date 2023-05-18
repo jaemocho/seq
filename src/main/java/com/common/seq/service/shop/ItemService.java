@@ -24,6 +24,4 @@ public interface ItemService {
     public Item getItem(Long id);
 
     public Item getItemForUpdate(Long id);
-
-    public void itemNullCheck(Item item);
 }

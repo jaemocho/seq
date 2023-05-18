@@ -3,11 +3,10 @@ package com.common.seq.service.shop.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.common.seq.common.Constants.ExceptionClass;
+import com.common.seq.common.CommonUtils;
 import com.common.seq.common.exception.ShopException;
 import com.common.seq.data.dao.shop.CategoryDAO;
 import com.common.seq.data.dto.shop.ReqCategoryDto;
@@ -34,7 +33,7 @@ public class CategoryServiceImpl implements CategoryService{
     public void removeCategory(Long id) throws ShopException{
         // item 삭제를 해야하나 ?
         Category category = getCategory(id);
-        categoryNullCheck(category);
+        CommonUtils.nullCheckAndThrowException(category, Category.class.getName());
         categoryDAO.delete(category);
     }
 
@@ -51,7 +50,7 @@ public class CategoryServiceImpl implements CategoryService{
     @Transactional(readOnly = true)
     public RespCategoryDto getCategoryById(Long id) throws ShopException {
         Category category = getCategory(id);
-        categoryNullCheck(category);
+        CommonUtils.nullCheckAndThrowException(category, Category.class.getName());
         return entityToRespDto(category);
     }
 
@@ -66,14 +65,6 @@ public class CategoryServiceImpl implements CategoryService{
         Category category = categoryDAO.findById(id);
         return category;
     }
-
-    private void categoryNullCheck(Category category) {
-        if( category == null) {
-            throw new ShopException(ExceptionClass.SHOP
-            , HttpStatus.BAD_REQUEST, "Not Found Category"); 
-        }
-    }
-
 
     private List<RespCategoryDto> entityToRespDto(List<Category> categorys){
         List<RespCategoryDto> respCategoryDtos = new ArrayList<RespCategoryDto>();

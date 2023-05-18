@@ -21,5 +21,4 @@ public interface MemberService {
 
     public Member getMember(String memberId);
 
-    public void memberNullCheck(Member member);
 }
