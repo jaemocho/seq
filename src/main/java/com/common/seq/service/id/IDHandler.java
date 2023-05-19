@@ -1,4 +1,4 @@
-package com.common.seq.id;
+package com.common.seq.service.id;
 
 public interface IDHandler {
     

@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.Test;
 
-import com.common.seq.id.ID;
-import com.common.seq.id.IDHandler;
-import com.common.seq.id.impl.GUID;
-import com.common.seq.id.impl.GUIDHandler;
+import com.common.seq.service.id.ID;
+import com.common.seq.service.id.IDHandler;
+import com.common.seq.service.id.impl.GUID;
+import com.common.seq.service.id.impl.GUIDHandler;
 
 public class GUIDUnitTest {
     

@@ -1,8 +1,8 @@
-package com.common.seq.id.impl;
+package com.common.seq.service.id.impl;
 
 import java.util.Date;
 
-import com.common.seq.id.ID;
+import com.common.seq.service.id.ID;
 
 public class GUID implements ID{
 

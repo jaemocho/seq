@@ -15,9 +15,9 @@ import com.common.seq.data.dto.ReqGUID;
 import com.common.seq.data.dto.RespGUID;
 import com.common.seq.data.entity.Sequence;
 import com.common.seq.data.entity.User;
-import com.common.seq.id.IDHandler;
-import com.common.seq.id.impl.GUID;
 import com.common.seq.service.SequenceService;
+import com.common.seq.service.id.IDHandler;
+import com.common.seq.service.id.impl.GUID;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

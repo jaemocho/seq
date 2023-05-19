@@ -1,12 +1,12 @@
-package com.common.seq.id.impl;
+package com.common.seq.service.id.impl;
 
 import java.util.Date;
 import java.util.Random;
 
 import org.springframework.stereotype.Component;
 
-import com.common.seq.id.ID;
-import com.common.seq.id.IDHandler;
+import com.common.seq.service.id.ID;
+import com.common.seq.service.id.IDHandler;
 
 
 @Component
