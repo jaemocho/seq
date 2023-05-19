@@ -13,17 +13,17 @@ import com.common.seq.id.IDHandler;
 public class GUIDHandler implements IDHandler {
 
     // 끝 4자리 랜덤 값 seed (16*16*16*16)
-    final public int minRandomValue = 4096;
-    final public int maxRandomValue = 65535-minRandomValue;
+    private final int MIN_RANDOM_VALUE = 4096;
+    private final int MAX_RANDOM_VALUE = 65535-MIN_RANDOM_VALUE;
     
     // guid 에 입력할 수 있는 서버 id 최대 개수 
-    final public int serverListSize = 4;
+    private final int SERVER_LIST_SIZE = 4;
 
     // server id 자리 수 
-    final public int serverIdSize = 3;
+    private final int SERVER_ID_SIZE = 3;
 
     // guid에 현재 몇 번째 index까지 서버가 입력되었는지 표기하는 위치(13번재 자리)
-    final public int nextIndexPos = serverListSize * serverIdSize;
+    private final int NEXT_IDX_POS = SERVER_LIST_SIZE * SERVER_ID_SIZE;
     
     /**
      * Generate New GUID
@@ -33,18 +33,83 @@ public class GUIDHandler implements IDHandler {
      * @throws NULL
      */
     public ID genNewID() {
-        Random r = new Random();
-        String ranStr = Integer.toHexString(r.nextInt(maxRandomValue)+minRandomValue);
+        String randomString = createRandomString();
+        return createNewId(randomString);
+    }
 
+    private String createRandomString() {
+        Random r = new Random();
+        return Integer.toHexString(r.nextInt(MAX_RANDOM_VALUE)+MIN_RANDOM_VALUE);
+    }
+
+    private ID createNewId(String randomString) {
         ID newId = new GUID();
         long time = System.currentTimeMillis();
-        newId.setId("xxxxxxxxxxxx"+ "0" + String.valueOf(time) + ranStr);
+        newId.setId("xxxxxxxxxxxx"+ "0" + String.valueOf(time) + randomString);
         newId.setLastModifyDate(new Date(time));
-        
         return newId;
     }
 
-    /**
+   /**
+     * GUID update
+     * 
+     * update server id
+     * update nextIndexPos (max 값에 도달하면 0으로)
+     * 
+     * @return GUID
+     * @throws NULL
+     */
+    public ID update(ID id, Object... param) {
+        
+        if (!validate(id)) {
+            id = genNewID();
+        }
+        String serverId = createServerId(param);
+        String updatedGUID = updateGUID(id, serverId);
+        id.setLastModifyDate(new Date(System.currentTimeMillis()));
+        id.setId(updatedGUID);
+        
+        return id;
+    }
+
+    private String updateGUID(ID id, String serverId) {
+        
+        String guid = id.getId();
+        int insertIdx = Integer.parseInt(guid.charAt(NEXT_IDX_POS)+"");        
+        int startidx = insertIdx * SERVER_ID_SIZE;
+        
+        char[] updatedGUID =  guid.toCharArray();
+
+        // 입력 가능한 서버 수를 초과 하였을 경우 
+        if ( insertIdx == SERVER_LIST_SIZE ) {
+            int lastIdxPos = SERVER_ID_SIZE * (SERVER_LIST_SIZE-1);
+            deleteFirstServerInGUID(updatedGUID, lastIdxPos);
+            addNewServerInGUID(updatedGUID, serverId, lastIdxPos);
+        } else {
+            addNewServerInGUID(updatedGUID, serverId, startidx);
+            updateNextIdxPos(updatedGUID, insertIdx);
+        }
+
+        return String.valueOf(updatedGUID);
+    }
+
+    private void deleteFirstServerInGUID(char[] guid, int lastIdxPos) {
+        for ( int i = 0; i < lastIdxPos; i++) {
+            guid[i] = guid[i+SERVER_ID_SIZE];
+        }
+    }
+
+    private void addNewServerInGUID(char[] guid, String serverId, int startIdx) {
+        for (int i = startIdx, j = 0; i < startIdx + SERVER_ID_SIZE && j < SERVER_ID_SIZE; i++, j++) {
+            guid[i] = serverId.charAt(j);
+        }
+    }
+
+    private void updateNextIdxPos(char[] guid, int currentIdx) {
+        guid[NEXT_IDX_POS] = (char)(currentIdx + 1 +'0');
+    }
+
+     /**
      * GUID validate check 
      * 
      * guid null, empty check
@@ -57,109 +122,75 @@ public class GUIDHandler implements IDHandler {
     public Boolean validate(ID id) {
 
         if ( id == null ) return false;
-        
         String guid = id.getId();
-
-        // null empty check
-        if ( guid == null || "".equals(guid) ) {
+        if ( isNull(guid) ) {
             return false;
         }
-
-        // length check
         if ( guid.length() != 30 ) {
             return false;
         }
-
-        // 0 ~ server list size check 
-        char nextIdx = guid.charAt(nextIndexPos);
-        if ( !(nextIdx >= '0' 
-            &&  nextIdx <= (char)(serverListSize)+'0')) {
-                return false;
+        if (!vaildateNextIdxPos(guid.charAt(NEXT_IDX_POS)) ) {
+            return false;
         }
-
         return true;
     }
 
-    /**
-     * GUID update
-     * 
-     * update server id
-     * update nextIndexPos (max 값에 도달하면 0으로)
-     * 
-     * @return GUID
-     * @throws NULL
-     */
-    public ID update(ID id, Object... param) {
-
-        // update param 정합성 검증 
-        String serverId;
-        
-        if (param.length == 0 ) {
-            serverId = "NEW";
-        } else {
-            if ( param[0] instanceof String) {
-                serverId = (String)param[0];
-            } else {
-                serverId = "NEW";
-            }
+    private boolean vaildateNextIdxPos(char nextIdx) {
+        if ( !(nextIdx >= '0' 
+            &&  nextIdx <= (char)(SERVER_LIST_SIZE)+'0')) {
+                return false;
         }
+        return true;
+    }
 
-        if ( serverId == null || "".equals(serverId.trim())) {
-            serverId = "NEW";
+    private String createServerId(Object... param) {
+        String serverId;
+        if (vaildateParam(param)) {
+            serverId = (String)param[0];
+        } else{
+            return "NEW";
         }
 
         serverId = serverId.trim();
-
         serverId = serverId.replaceAll(" ", "x");
 
         if ( serverId.length() < 3 ) {
-            int currentLen = serverId.length();
-            for (int i = 0; i < 3 - currentLen; i++) {
-                serverId += "x";
-            }
+            serverId = addXToPost(serverId);
         }
 
-        // id 정합성 검증
-        if (!validate(id)) {
-            id = genNewID();
-        }
+        return serverId;
+    }
 
-        // id update
-        String guid = id.getId();
-
-        int insertIdx = Integer.parseInt(guid.charAt(nextIndexPos)+"");
-        
-        int startidx = insertIdx * serverIdSize;
-        int endIdx = startidx + serverIdSize - 1;
-
-        char[] updatedGUID =  guid.toCharArray();
-
-        // 입력 가능한 서버 수를 초과 하였을 경우 
-        if ( insertIdx == serverListSize ) {
-            int idx = serverIdSize * (serverListSize-1);
-            // 제일 처음 서버를 삭제 
-            for ( int i = 0; i < idx; i++) {
-                updatedGUID[i] = updatedGUID[i+serverIdSize];
-            }
-
-            // 마지막에 신규 서버 입력 
-            for (int i = idx, j = 0; i < idx + serverIdSize && j < serverIdSize; i++, j++) {
-                updatedGUID[i] = serverId.charAt(j);
-            }
+    private boolean vaildateParam(Object... param) {
+        if (param.length == 0 ) {
+            return false;
         } else {
-
-            // 지정된 idx에 서버 입력 
-            for (int i = startidx, j = 0; i <= endIdx && j < serverIdSize; i++, j++) {
-                updatedGUID[i] = serverId.charAt(j);
+            if ( isString(param[0])) {
+                if(isNull((String)param[0])) {
+                    return false;
+                }
+                return true;
+            } else {
+                return false;
             }
-
-            updatedGUID[nextIndexPos] = (char)(insertIdx + 1 +'0');
         }
+    }
 
-        id.setLastModifyDate(new Date(System.currentTimeMillis()));
-        id.setId(String.valueOf(updatedGUID));
-        
-        return id;
+    private boolean isString(Object object) {
+        if( object instanceof String ) return true;
+        return false;
+    }
+
+    private boolean isNull(String string) {
+        return string == null || "".equals(string.trim());
+    }
+
+    private String addXToPost(String serverId) {
+        int currentLen = serverId.length();
+        for (int i = 0; i < 3 - currentLen; i++) {
+            serverId += "x";
+        }
+        return serverId;
     }
 
     

@@ -68,29 +68,6 @@ public class ShortenUrlServiceImpl implements ShortenUrlService {
         return shortenUrlDAO.findByOrgUrl(originUrl);
     }
 
-    private ShortenUrl createShortenUrl(ResponseEntity<RespShortenUrl> responseEntity) {
-        return  ShortenUrl.builder()
-                .orgUrl(responseEntity.getBody().getResult().getOrgUrl())
-                .url(responseEntity.getBody().getResult().getUrl())
-                .hash(responseEntity.getBody().getResult().getHash())
-                .build();
-    }
-
-    private ShortenUrl saveShortenUrlInDB(ShortenUrl shortenUrl) {
-        return shortenUrlDAO.save(shortenUrl);
-    }
-
-    private RespShortenUrlDto createRespShortenUrlDto (ShortenUrl shortenUrl){
-        return RespShortenUrlDto.builder()
-                            .shortenUrl(shortenUrl.getUrl())
-                            .orgUrl(shortenUrl.getOrgUrl())
-                            .build();
-    }
-
-    private void saveShortenUrlInCache(RespShortenUrlDto respShortenUrlDto){
-        shortenUrlRedisRepository.save(respShortenUrlDto);
-    }
-
     private ResponseEntity<RespShortenUrl> requestShortenUrl(String originUrl, String CLIENT_ID, String CLIENT_SECRET)  {
         URI uri = createURIForNaverAPI(originUrl);
         HttpHeaders headers = makeHeaders(CLIENT_ID, CLIENT_SECRET);
@@ -118,5 +95,30 @@ public class ShortenUrlServiceImpl implements ShortenUrlService {
         headers.set("X-Naver-Client-Secret", CLIENT_SECRET);
         return headers;
     }
+
+    private ShortenUrl createShortenUrl(ResponseEntity<RespShortenUrl> responseEntity) {
+        return  ShortenUrl.builder()
+                .orgUrl(responseEntity.getBody().getResult().getOrgUrl())
+                .url(responseEntity.getBody().getResult().getUrl())
+                .hash(responseEntity.getBody().getResult().getHash())
+                .build();
+    }
+
+    private ShortenUrl saveShortenUrlInDB(ShortenUrl shortenUrl) {
+        return shortenUrlDAO.save(shortenUrl);
+    }
+
+    private RespShortenUrlDto createRespShortenUrlDto (ShortenUrl shortenUrl){
+        return RespShortenUrlDto.builder()
+                            .shortenUrl(shortenUrl.getUrl())
+                            .orgUrl(shortenUrl.getOrgUrl())
+                            .build();
+    }
+
+    private void saveShortenUrlInCache(RespShortenUrlDto respShortenUrlDto){
+        shortenUrlRedisRepository.save(respShortenUrlDto);
+    }
+
+
 
 }

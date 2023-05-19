@@ -25,40 +25,44 @@ public class SequenceServiceImpl implements SequenceService{
     final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
     @Transactional
-    public Sequence save(Sequence sequence){
-        return sequenceDAO.saveSequence(sequence);
-    }
-
-    @Transactional
     public Sequence update(){
-        
         String date = formatter.format(new Date(System.currentTimeMillis()));
-        
         Sequence sequence = sequenceDAO.getSequenceForUpdate(date);
-
         if ( sequence == null ) {
-            sequence = save(new Sequence(0L, 0L, date));
-        }
-        // log.error(sequence.getId() +" "+ sequence.getSeq() + " " + seqMaxVal.equals(sequence.getSeq()) );  
-        
-        if ( seqMaxVal.equals(sequence.getSeq())) {
-            sequence.updateSeq(1L) ;   
-        } else {
-            sequence.updateSeq(sequence.getSeq()+1);
-        }
+            sequence = createNewSequence(date);
+            sequence = save(sequence);
+        }        
+        checkMaxValAndUpdateSeq(sequence);
         return sequence;
     }
 
     @Transactional
     public Sequence get(){
-        
         String date = formatter.format(new Date(System.currentTimeMillis()));
         
         Sequence sequence = sequenceDAO.getSequence(date);
         if (sequence == null) {
-            sequence = save(new Sequence(0L, 0L, date));
+            sequence = createNewSequence(date);
+            sequence = save(sequence);
         }
         return sequence;
+    }
+
+    private Sequence createNewSequence(String date) {
+        return new Sequence(0L, 0L, date);
+    }
+
+    @Transactional
+    public Sequence save(Sequence sequence){
+        return sequenceDAO.saveSequence(sequence);
+    }
+
+    private void checkMaxValAndUpdateSeq(Sequence sequence) {
+        if ( seqMaxVal.equals(sequence.getSeq())) {
+            sequence.updateSeq(1L) ;   
+        } else {
+            sequence.updateSeq(sequence.getSeq()+1);
+        }
     }
 
 }
