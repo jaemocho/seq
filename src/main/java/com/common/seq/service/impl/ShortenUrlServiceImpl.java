@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -32,61 +33,21 @@ public class ShortenUrlServiceImpl implements ShortenUrlService {
 
     private final ShortenUrlRedisRepository shortenUrlRedisRepository;
 
-    private ResponseEntity<RespShortenUrl> requestShortenUrl(String originUrl, String CLIENT_ID, String CLIENT_SECRET)  {
-
-        URI uri = UriComponentsBuilder.fromUriString("https://openapi.naver.com")
-                                .path("/v1/util/shorturl")
-                                .queryParam("url", originUrl)
-                                .encode()
-                                .build()
-                                .toUri();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Arrays.asList(new MediaType[]{MediaType.APPLICATION_JSON}));
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("X-Naver-Client-Id", CLIENT_ID);
-        headers.set("X-Naver-Client-Secret", CLIENT_SECRET);
-
-        // body + header, 요청 spec에 body 는 없어서 header만 
-        HttpEntity<String> entity = new HttpEntity<>("", headers);
-
-        RestTemplate restTemplete = new RestTemplate();
-
-        ResponseEntity<RespShortenUrl> responseEntity 
-            = restTemplete.exchange(uri, HttpMethod.GET, entity, RespShortenUrl.class);
-  
-        return responseEntity;
-    }
-
+    @Transactional
     public RespShortenUrlDto genShortenUrl(String originUrl, String CLIENT_ID, String CLIENT_SECRET) {
 
         RespShortenUrlDto respShortenUrlDto = findShortenUrlInCache(originUrl);
         if (respShortenUrlDto != null) return respShortenUrlDto;
 
-        
-        ShortenUrl shortenUrl = shortenUrlDAO.findByOrgUrl(originUrl);
-        
+        ShortenUrl shortenUrl = findShortenUrlInDB(originUrl);
         if (shortenUrl == null)  {
             ResponseEntity<RespShortenUrl> responseEntity = requestShortenUrl(originUrl, CLIENT_ID, CLIENT_SECRET);
-            
-            if (responseEntity == null || responseEntity.getBody() == null) return null;
-
-            shortenUrl = shortenUrlDAO.save(
-                ShortenUrl.builder()
-                    .orgUrl(originUrl)
-                    .url(responseEntity.getBody().getResult().getUrl())
-                    .hash(responseEntity.getBody().getResult().getHash())
-                    .build()
-            );
+            shortenUrl = createShortenUrl(responseEntity);
+            shortenUrl = saveShortenUrlInDB(shortenUrl);
         } 
 
-        respShortenUrlDto =  RespShortenUrlDto.builder()
-                                                    .shortenUrl(shortenUrl.getUrl())
-                                                    .orgUrl(shortenUrl.getOrgUrl())
-                                                    .build();
-        // redis cache 저장
-        shortenUrlRedisRepository.save(respShortenUrlDto);
-
+        respShortenUrlDto =  createRespShortenUrlDto(shortenUrl);
+        saveShortenUrlInCache(respShortenUrlDto);
         return respShortenUrlDto;
     }
 
@@ -101,6 +62,61 @@ public class ShortenUrlServiceImpl implements ShortenUrlService {
         }
 
         return null;
+    }
+
+    private ShortenUrl findShortenUrlInDB(String originUrl) {
+        return shortenUrlDAO.findByOrgUrl(originUrl);
+    }
+
+    private ShortenUrl createShortenUrl(ResponseEntity<RespShortenUrl> responseEntity) {
+        return  ShortenUrl.builder()
+                .orgUrl(responseEntity.getBody().getResult().getOrgUrl())
+                .url(responseEntity.getBody().getResult().getUrl())
+                .hash(responseEntity.getBody().getResult().getHash())
+                .build();
+    }
+
+    private ShortenUrl saveShortenUrlInDB(ShortenUrl shortenUrl) {
+        return shortenUrlDAO.save(shortenUrl);
+    }
+
+    private RespShortenUrlDto createRespShortenUrlDto (ShortenUrl shortenUrl){
+        return RespShortenUrlDto.builder()
+                            .shortenUrl(shortenUrl.getUrl())
+                            .orgUrl(shortenUrl.getOrgUrl())
+                            .build();
+    }
+
+    private void saveShortenUrlInCache(RespShortenUrlDto respShortenUrlDto){
+        shortenUrlRedisRepository.save(respShortenUrlDto);
+    }
+
+    private ResponseEntity<RespShortenUrl> requestShortenUrl(String originUrl, String CLIENT_ID, String CLIENT_SECRET)  {
+        URI uri = createURIForNaverAPI(originUrl);
+        HttpHeaders headers = makeHeaders(CLIENT_ID, CLIENT_SECRET);
+        HttpEntity<String> entity = new HttpEntity<>("", headers);
+        RestTemplate restTemplete = new RestTemplate();
+        ResponseEntity<RespShortenUrl> responseEntity 
+            = restTemplete.exchange(uri, HttpMethod.GET, entity, RespShortenUrl.class);
+        return responseEntity;
+    }
+
+    private URI createURIForNaverAPI(String originUrl) {
+        return UriComponentsBuilder.fromUriString("https://openapi.naver.com")
+                .path("/v1/util/shorturl")
+                .queryParam("url", originUrl)
+                .encode()
+                .build()
+                .toUri();
+    }
+
+    private HttpHeaders makeHeaders(String CLIENT_ID, String CLIENT_SECRET){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(new MediaType[]{MediaType.APPLICATION_JSON}));
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("X-Naver-Client-Id", CLIENT_ID);
+        headers.set("X-Naver-Client-Secret", CLIENT_SECRET);
+        return headers;
     }
 
 }
