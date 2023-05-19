@@ -72,6 +72,24 @@ public class GUIDHandler implements IDHandler {
         return id;
     }
 
+    private String createServerId(Object... param) {
+        String serverId;
+        if (vaildateParam(param)) {
+            serverId = (String)param[0];
+        } else{
+            return "NEW";
+        }
+
+        serverId = serverId.trim();
+        serverId = serverId.replaceAll(" ", "x");
+
+        if ( serverId.length() < 3 ) {
+            serverId = addXToPost(serverId);
+        }
+
+        return serverId;
+    }
+
     private String updateGUID(ID id, String serverId) {
         
         String guid = id.getId();
@@ -91,6 +109,29 @@ public class GUIDHandler implements IDHandler {
         }
 
         return String.valueOf(updatedGUID);
+    }
+
+    private boolean vaildateParam(Object... param) {
+        if (param.length == 0 ) {
+            return false;
+        } else {
+            if ( isString(param[0])) {
+                if(isNull((String)param[0])) {
+                    return false;
+                }
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    private String addXToPost(String serverId) {
+        int currentLen = serverId.length();
+        for (int i = 0; i < 3 - currentLen; i++) {
+            serverId += "x";
+        }
+        return serverId;
     }
 
     private void deleteFirstServerInGUID(char[] guid, int lastIdxPos) {
@@ -143,38 +184,7 @@ public class GUIDHandler implements IDHandler {
         return true;
     }
 
-    private String createServerId(Object... param) {
-        String serverId;
-        if (vaildateParam(param)) {
-            serverId = (String)param[0];
-        } else{
-            return "NEW";
-        }
 
-        serverId = serverId.trim();
-        serverId = serverId.replaceAll(" ", "x");
-
-        if ( serverId.length() < 3 ) {
-            serverId = addXToPost(serverId);
-        }
-
-        return serverId;
-    }
-
-    private boolean vaildateParam(Object... param) {
-        if (param.length == 0 ) {
-            return false;
-        } else {
-            if ( isString(param[0])) {
-                if(isNull((String)param[0])) {
-                    return false;
-                }
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
 
     private boolean isString(Object object) {
         if( object instanceof String ) return true;
@@ -185,13 +195,7 @@ public class GUIDHandler implements IDHandler {
         return string == null || "".equals(string.trim());
     }
 
-    private String addXToPost(String serverId) {
-        int currentLen = serverId.length();
-        for (int i = 0; i < 3 - currentLen; i++) {
-            serverId += "x";
-        }
-        return serverId;
-    }
+
 
     
 }
