@@ -117,13 +117,9 @@ public class ItemServiceUnitTest {
         //then 
         assertEquals(3, respItemDtos.size());
 
-        int categoryCnt = 0;
-        for(RespItemDto dto : respItemDtos) {
-            if ("WOMEN".equals(dto.getCategoryName())) {
-                categoryCnt++;
-            }
-        }
-
+        long categoryCnt = respItemDtos.stream()
+                                     .filter(i -> ("WOMEN".equals(i.getCategoryName())))
+                                     .count();
         assertEquals(2, categoryCnt);
     }
 
@@ -173,12 +169,9 @@ public class ItemServiceUnitTest {
         //then 
         assertEquals(3, respItemDtos.size());
 
-        int categoryCnt = 0;
-        for(RespItemDto dto : respItemDtos) {
-            if ("WOMEN".equals(dto.getCategoryName())) {
-                categoryCnt++;
-            }
-        }
+        long categoryCnt = respItemDtos.stream()
+                                    .filter(i -> ("WOMEN".equals(i.getCategoryName())))
+                                    .count();
 
         assertEquals(3, categoryCnt);
     }

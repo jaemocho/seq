@@ -113,7 +113,7 @@ public class OrderServiceImpl implements OrderService  {
             item.removeRemainQty(requestItem.getRequestQty());
             orderItem = createOrderItem(item, requestItem.getRequestQty());
             orderItem.setOrder(order);
-            orderItemDAO.save(orderItem);
+            orderItemDAO.save(orderItem); // cascade 로 대체 가능 
         }
     }
 

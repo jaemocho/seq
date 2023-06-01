@@ -2,6 +2,7 @@ package com.common.seq.service.shop;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ public class CategoryServiceUnitTest {
                                 .name("WOMEN")
                                 .build();
 
-        when(categoryDAO.save(category)).thenReturn(category);
+        when(categoryDAO.save(any(Category.class))).thenReturn(category);
         when(categoryDAO.findById(category.getId())).thenReturn(category);
 
         //when
