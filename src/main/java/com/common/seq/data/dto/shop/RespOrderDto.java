@@ -5,11 +5,15 @@ import java.util.List;
 
 import com.common.seq.common.ShopConstants.OrderState;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class RespOrderDto {
     
     private Long orderId;
@@ -18,6 +22,8 @@ public class RespOrderDto {
 
     private List<OrderItemInfo> orderItemInfos;
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Builder
     @Getter
     public static class OrderItemInfo {

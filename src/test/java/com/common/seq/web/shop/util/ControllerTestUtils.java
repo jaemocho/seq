@@ -8,6 +8,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 public class ControllerTestUtils {
     
@@ -28,5 +29,12 @@ public class ControllerTestUtils {
     private static String makeContentByObjectMapper(Object object) throws Exception{
         return new ObjectMapper().writeValueAsString(object);
     }
-    
+
+    public static <T> List<T> makeDtoListByContent(String content, Class<T> elementClass) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        TypeFactory typeFactory = mapper.getTypeFactory();
+        return mapper.readValue(content
+            ,typeFactory.constructCollectionType(List.class, elementClass));
+        
+    }
 }
